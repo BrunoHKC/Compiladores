@@ -2,7 +2,7 @@
 #define __TABELA_SIMBOLOS__
 
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 //-----------------Categoria do simbolo-----------------//

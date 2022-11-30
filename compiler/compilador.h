@@ -23,6 +23,8 @@ typedef enum simbolos {
   simb_goto,
   simb_if,simb_then,simb_else,
   simb_while,simb_do,
+  simb_mais,simb_menos,simb_divisao,simb_multiplicacao,
+  simb_maior,simb_menor,simb_maior_igual,simb_menor_igual,simb_igual,simb_diferente,
   simb_or,simb_div,simb_and,simb_not,
   simb_atribuicao,simb_ponto_e_virgula,simb_dois_pontos,simb_virgula,simb_ponto,
   simb_abre_parenteses,simb_fecha_parenteses,

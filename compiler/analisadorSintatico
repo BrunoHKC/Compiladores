@@ -1,5 +1,5 @@
 program     # program 
- ident      # declaraVars 
+ ident      # exemplo75 
  abre_parenteses      # ( 
  ident      # input 
  virgula      # , 
@@ -7,27 +7,11 @@ program     # program
  fecha_parenteses     # ) 
  pt_virgula      # ; 
 var      # var 
- ident      # a 
-[ASynt]	INSERE VAR SIMPLES  a
+ ident      # m 
+[ASynt]	INSERE VAR SIMPLES  m
  virgula      # , 
- ident      # b 
-[ASynt]	INSERE VAR SIMPLES  b
- dois pontos     # : 
-integer     # integer 
- pt_virgula      # ; 
- ident      # c 
-[ASynt]	INSERE VAR SIMPLES  c
- virgula      # , 
- ident      # d 
-[ASynt]	INSERE VAR SIMPLES  d
- virgula      # , 
- ident      # e 
-[ASynt]	INSERE VAR SIMPLES  e
- dois pontos     # : 
-boolean     # boolean 
- pt_virgula      # ; 
- ident      # f 
-[ASynt]	INSERE VAR SIMPLES  f
+ ident      # n 
+[ASynt]	INSERE VAR SIMPLES  n
  dois pontos     # : 
 integer     # integer 
  pt_virgula      # ; 

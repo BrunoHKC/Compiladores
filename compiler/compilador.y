@@ -136,8 +136,30 @@ comandos: 	comando
 			| comandos comando
 ;
 
-comando:
+comando: 	atribuicao
+//			| chamada_procedimento
+//			| desvio
+//			| comando_condicional
+//			| comando_repetitivo
 ;
+
+atribuicao: variavel ATRIBUICAO expressao PONTO_E_VIRGULA;
+
+expressao: 	expressao_simples 
+			| relacao expressao_simples;
+
+variavel: IDENT{ 
+					Item* var = busca(&ts,token);
+					if(var == NULL)
+					{
+						//TODO: gera erro
+						char buff[100];
+	          			snprintf(buff,100,"Variavel %s nao foi declarada",token);
+						fprintf(stderr,buff);
+						exit(1);
+					}
+
+				}
 
 %%
 

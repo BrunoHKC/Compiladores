@@ -1,7 +1,8 @@
 #ifndef __STACK__
 #define __STACK__
 
-#include <malloc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 
 typedef struct Node

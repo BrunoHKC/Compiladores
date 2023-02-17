@@ -1,21 +1,37 @@
 program     # program 
- ident      # exemplo75 
+ ident      # declaraVars 
  abre_parenteses      # ( 
  ident      # input 
+[ASynt]	INSERE VAR SIMPLES  input
  virgula      # , 
  ident      # output 
+[ASynt]	INSERE VAR SIMPLES  output
  fecha_parenteses     # ) 
  pt_virgula      # ; 
 var      # var 
- ident      # m 
-[ASynt]	INSERE VAR SIMPLES  m
+ ident      # a 
+[ASynt]	INSERE VAR SIMPLES  a
  virgula      # , 
- ident      # n 
-[ASynt]	INSERE VAR SIMPLES  n
+ ident      # b 
+[ASynt]	INSERE VAR SIMPLES  b
+ dois pontos     # : 
+integer     # integer 
+ pt_virgula      # ; 
+ ident      # c 
+[ASynt]	INSERE VAR SIMPLES  c
+ virgula      # , 
+ ident      # d 
+[ASynt]	INSERE VAR SIMPLES  d
+ virgula      # , 
+ ident      # e 
+[ASynt]	INSERE VAR SIMPLES  e
+ dois pontos     # : 
+boolean     # boolean 
+ pt_virgula      # ; 
+ ident      # f 
+[ASynt]	INSERE VAR SIMPLES  f
  dois pontos     # : 
 integer     # integer 
  pt_virgula      # ; 
 begin     # begin 
 end      # end 
-[TS]
-Alerta: Tentou remover simbolos a mais ponto      # . 

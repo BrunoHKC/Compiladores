@@ -4,3 +4,4 @@ program declaraVars (input, output);
 		f: integer;
 begin
 end.
+

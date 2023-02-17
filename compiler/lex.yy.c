@@ -1075,7 +1075,7 @@ YY_RULE_SETUP
 case 31:
 YY_RULE_SETUP
 #line 212 "compilador.l"
-{ simbolo = simb_igual
+{ simbolo = simb_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" igual ");
           return IGUAL;
@@ -1084,7 +1084,7 @@ YY_RULE_SETUP
 case 32:
 YY_RULE_SETUP
 #line 218 "compilador.l"
-{ simbolo = simb_diferente
+{ simbolo = simb_diferente;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" diferente ");
           return DIFERENTE;
@@ -1093,7 +1093,7 @@ YY_RULE_SETUP
 case 33:
 YY_RULE_SETUP
 #line 224 "compilador.l"
-{ simbolo = simb_menor
+{ simbolo = simb_menor;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menor ");
           return MENOR;
@@ -1102,7 +1102,7 @@ YY_RULE_SETUP
 case 34:
 YY_RULE_SETUP
 #line 230 "compilador.l"
-{ simbolo = simb_menor_igual
+{ simbolo = simb_menor_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menor ou igual ");
           return MENOR_IGUAL;
@@ -1111,7 +1111,7 @@ YY_RULE_SETUP
 case 35:
 YY_RULE_SETUP
 #line 236 "compilador.l"
-{ simbolo = simb_maior
+{ simbolo = simb_maior;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" maior ");
           return MAIOR;
@@ -1120,7 +1120,7 @@ YY_RULE_SETUP
 case 36:
 YY_RULE_SETUP
 #line 242 "compilador.l"
-{ simbolo = simb_maior_igual
+{ simbolo = simb_maior_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" maior ou igual ");
           return MAIOR_IGUAL;
@@ -1129,7 +1129,7 @@ YY_RULE_SETUP
 case 37:
 YY_RULE_SETUP
 #line 248 "compilador.l"
-{ simbolo = simb_mais
+{ simbolo = simb_mais;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" mais ");
           return MAIS;
@@ -1138,7 +1138,7 @@ YY_RULE_SETUP
 case 38:
 YY_RULE_SETUP
 #line 254 "compilador.l"
-{ simbolo = simb_menos
+{ simbolo = simb_menos;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menos ");
           return MENOS;
@@ -1147,7 +1147,7 @@ YY_RULE_SETUP
 case 39:
 YY_RULE_SETUP
 #line 260 "compilador.l"
-{ simbolo = simb_multiplicacao
+{ simbolo = simb_multiplicacao;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" multiplicacao ");
           return MULTIPLICACAO;
@@ -1156,7 +1156,7 @@ YY_RULE_SETUP
 case 40:
 YY_RULE_SETUP
 #line 266 "compilador.l"
-{ simbolo = simb_divisao
+{ simbolo = simb_divisao;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" divisao ");
           return DIVISAO;

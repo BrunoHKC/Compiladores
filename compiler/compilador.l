@@ -209,61 +209,61 @@ not { simbolo = simb_not;
           return FECHA_PARENTESES;
  }
 
-\=  { simbolo = simb_igual
+\=  { simbolo = simb_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" igual ");
           return IGUAL;
     }
 
-\<>  { simbolo = simb_diferente
+\<>  { simbolo = simb_diferente;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" diferente ");
           return DIFERENTE;
     }
 
-\<  { simbolo = simb_menor
+\<  { simbolo = simb_menor;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menor ");
           return MENOR;
     }
 
-\<=  { simbolo = simb_menor_igual
+\<=  { simbolo = simb_menor_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menor ou igual ");
           return MENOR_IGUAL;
     }
 
-\>  { simbolo = simb_maior
+\>  { simbolo = simb_maior;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" maior ");
           return MAIOR;
     }
 
-\>=  { simbolo = simb_maior_igual
+\>=  { simbolo = simb_maior_igual;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" maior ou igual ");
           return MAIOR_IGUAL;
     }
 
-\+  { simbolo = simb_mais
+\+  { simbolo = simb_mais;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" mais ");
           return MAIS;
     }
 
-\-  { simbolo = simb_menos
+\-  { simbolo = simb_menos;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" menos ");
           return MENOS;
     }
 
-\*  { simbolo = simb_multiplicacao
+\*  { simbolo = simb_multiplicacao;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" multiplicacao ");
           return MULTIPLICACAO;
     }
 
-\/  { simbolo = simb_divisao
+\/  { simbolo = simb_divisao;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" divisao ");
           return DIVISAO;

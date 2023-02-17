@@ -29,7 +29,7 @@ typedef enum simbolos {
   simb_atribuicao,simb_ponto_e_virgula,simb_dois_pontos,simb_virgula,simb_ponto,
   simb_abre_parenteses,simb_fecha_parenteses,
   simb_integer,simb_boolean,
-  simb_identificador
+  simb_identificador,simb_numero
 } simbolos;
 
 

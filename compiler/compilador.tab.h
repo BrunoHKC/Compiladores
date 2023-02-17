@@ -52,33 +52,34 @@
      T_END = 268,
      VAR = 269,
      IDENT = 270,
-     ATRIBUICAO = 271,
-     IGUAL = 272,
-     DIFERENTE = 273,
-     MAIOR = 274,
-     MENOR = 275,
-     MAIOR_IGUAL = 276,
-     MENOR_IGUAL = 277,
-     MAIS = 278,
-     MENOS = 279,
-     MULTIPLICACAO = 280,
-     DIVISAO = 281,
-     T_LABEL = 282,
-     T_TYPE = 283,
-     T_ARRAY = 284,
-     T_OF = 285,
-     T_PROCEDURE = 286,
-     T_FUNCTION = 287,
-     T_GOTO = 288,
-     T_IF = 289,
-     T_THEN = 290,
-     T_ELSE = 291,
-     T_WHILE = 292,
-     T_DO = 293,
-     T_OR = 294,
-     T_DIV = 295,
-     T_AND = 296,
-     T_NOT = 297
+     NUMERO = 271,
+     ATRIBUICAO = 272,
+     IGUAL = 273,
+     DIFERENTE = 274,
+     MAIOR = 275,
+     MENOR = 276,
+     MAIOR_IGUAL = 277,
+     MENOR_IGUAL = 278,
+     MAIS = 279,
+     MENOS = 280,
+     MULTIPLICACAO = 281,
+     DIVISAO = 282,
+     T_LABEL = 283,
+     T_TYPE = 284,
+     T_ARRAY = 285,
+     T_OF = 286,
+     T_PROCEDURE = 287,
+     T_FUNCTION = 288,
+     T_GOTO = 289,
+     T_IF = 290,
+     T_THEN = 291,
+     T_ELSE = 292,
+     T_WHILE = 293,
+     T_DO = 294,
+     T_OR = 295,
+     T_DIV = 296,
+     T_AND = 297,
+     T_NOT = 298
    };
 #endif
 /* Tokens.  */
@@ -95,33 +96,34 @@
 #define T_END 268
 #define VAR 269
 #define IDENT 270
-#define ATRIBUICAO 271
-#define IGUAL 272
-#define DIFERENTE 273
-#define MAIOR 274
-#define MENOR 275
-#define MAIOR_IGUAL 276
-#define MENOR_IGUAL 277
-#define MAIS 278
-#define MENOS 279
-#define MULTIPLICACAO 280
-#define DIVISAO 281
-#define T_LABEL 282
-#define T_TYPE 283
-#define T_ARRAY 284
-#define T_OF 285
-#define T_PROCEDURE 286
-#define T_FUNCTION 287
-#define T_GOTO 288
-#define T_IF 289
-#define T_THEN 290
-#define T_ELSE 291
-#define T_WHILE 292
-#define T_DO 293
-#define T_OR 294
-#define T_DIV 295
-#define T_AND 296
-#define T_NOT 297
+#define NUMERO 271
+#define ATRIBUICAO 272
+#define IGUAL 273
+#define DIFERENTE 274
+#define MAIOR 275
+#define MENOR 276
+#define MAIOR_IGUAL 277
+#define MENOR_IGUAL 278
+#define MAIS 279
+#define MENOS 280
+#define MULTIPLICACAO 281
+#define DIVISAO 282
+#define T_LABEL 283
+#define T_TYPE 284
+#define T_ARRAY 285
+#define T_OF 286
+#define T_PROCEDURE 287
+#define T_FUNCTION 288
+#define T_GOTO 289
+#define T_IF 290
+#define T_THEN 291
+#define T_ELSE 292
+#define T_WHILE 293
+#define T_DO 294
+#define T_OR 295
+#define T_DIV 296
+#define T_AND 297
+#define T_NOT 298
 
 
 

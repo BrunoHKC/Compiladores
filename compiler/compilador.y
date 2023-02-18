@@ -38,6 +38,8 @@ int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
 
+int tipoExpressao;
+
 //Pilha de deslocamentos
 Stack* pilhaDeslocamentos;
 
@@ -65,7 +67,42 @@ void geraCRVL() {
 }
 
 void empilhaOperacao(int operacao)
-{
+{	
+	printf("Empilhando operacao\n");
+	switch(operacao)
+	{
+		case OP_IGUAL:
+		case OP_DIFERENTE:
+		case OP_AND:
+		case OP_OR:
+		case OP_NOT:
+			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_BOOL)
+			{
+				printf("Erro semantico: Tipo invalido 1!");
+				exit(1);
+			}
+			tipoExpressao = TYPE_BOOL;
+			break;
+		case OP_MENOR:
+		case OP_MENOR_OU_IGUAL:
+		case OP_MAIOR:
+		case OP_MAIOR_OU_IGUAL:
+		case OP_SOMA:
+		case OP_SUBTRACAO:
+		case OP_MULTIPLICACAO:
+		case OP_DIVISAO:
+		case OP_DIVISAO_INTEIRA:
+			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_INT)
+			{
+				printf("Erro semantico: Tipo invalido 2!");
+				exit(1);
+			}
+			tipoExpressao = TYPE_INT;
+			break;
+	}
+
+	printf("Atribuiu tipo\n");
+	
 	int* new_operacao = (int*)malloc(sizeof(int));
 	*new_operacao = operacao;
 	push(pilhaOperacoes,(void*)new_operacao);
@@ -257,6 +294,11 @@ comando: 	atribuicao PONTO_E_VIRGULA
 
 //Regra 19:
 atribuicao	: 
+			{
+				//reseta tipo
+				tipoExpressao = TYPE_UNDEFINED;
+				printf("Resetou tipo expressao %d\n",tipoExpressao);
+			}
 			variavel
 			{
 				empilhaVarNivelDestino(var->nivel);
@@ -264,6 +306,15 @@ atribuicao	:
 			}
 			ATRIBUICAO expressao
 			{
+				//Verifica se o tipo da expressao eh o mesmo da variavel
+				if(var->var.tipo != tipoExpressao)
+				{
+					//Gera erro semantico
+					printf("variavel %d expressao %d\n",var->var.tipo,tipoExpressao);
+					printf("Erro semantico: Atribuicao com tipo invalido!\n");
+					exit(1);
+				}
+
 				int nivel_destino = *(int*)pop(pilhaVarNivelDestino);
 				int deslocamento = *(int*)pop(pilhaVarDeslocamentos);
 				char buff[5 + 10];
@@ -276,7 +327,9 @@ atribuicao	:
 //lista_expressoes: lista_expressoes VIRGULA expressao| expressao;
 
 //Regra 25: expressao
-expressao: 	expressao_simples 
+expressao: 	
+
+			expressao_simples 
 			| expressao_simples relacao expressao_simples 
 			{
 				geraOperacao();
@@ -368,6 +421,15 @@ variavel	:
 
 //Regra 32: Numero
 numero: NUMERO {
+
+			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_INT)
+			{
+				printf("Erro semantico: Tipo invalido!");
+				exit(1);
+			}
+
+			tipoExpressao = TYPE_INT;
+
 			char buff[5 + 10];
 			strcpy(tokenAtual,token);
 			snprintf(buff,15,"CRCT %s",tokenAtual);

@@ -1,12 +1,12 @@
      INPP
      AMEM 2
-     CRCT 1
+     CRCT 0
+     ARMZ 1, 0
+     CRVL 1, 0
      CRCT 2
      SOMA 
      CRCT 3
      MULT 
-     ARMZ 1, 1
-     CRCT 0
      ARMZ 1, 1
      DMEM 2
      PARA

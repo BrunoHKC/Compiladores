@@ -36,6 +36,7 @@ int num_vars;
 int nivel_lexico = 0;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
+char tokenAtual[100];
 
 //Pilha de deslocamentos
 Stack* pilhaDeslocamentos;
@@ -85,7 +86,6 @@ void empilhaVarDeslocamento(int desloc)
 }
 
 void geraOperacao() {
-
 	int op = *(int*)pop(pilhaOperacoes);
 
 	switch (op) {
@@ -226,15 +226,17 @@ declara_vars : { 	/* zera contador */
 //Regra 10: lista de identificadores
 lista_idents: lista_idents VIRGULA IDENT
               { /* insere ultima vars na tabela de simbolos */
-              	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",token);
-              	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
+			  	strcpy(tokenAtual,token);
+              	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",tokenAtual);
+              	Item* novo_item = ItemVarSimples(tokenAtual,nivel_lexico,desloc);
               	insere(&ts,novo_item);
               	desloc++;
               	num_vars++;
                }
             | IDENT { /* insere vars na tabela de simbolos */
-            	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
-            	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",token);
+				strcpy(tokenAtual,token);
+            	Item* novo_item = ItemVarSimples(tokenAtual,nivel_lexico,desloc);
+            	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",tokenAtual);
               	insere(&ts,novo_item);
               	desloc++;
               	num_vars++;
@@ -242,19 +244,20 @@ lista_idents: lista_idents VIRGULA IDENT
 ;
 
 //Regra 16: comando composto
-comando_composto_aux: comando_composto_aux comando PONTO_E_VIRGULA | ;
-comando_composto: T_BEGIN comando  PONTO_E_VIRGULA comando_composto_aux T_END;
+comando_composto_aux: comando_composto_aux comando  | ;
+comando_composto: T_BEGIN comando  comando_composto_aux T_END;
 
 //Regra 17 e 18: comando (omitido comando sem rotulo)
-comando: 	atribuicao
-//			| chamada_procedimento
-//			| desvio
-//			| comando_condicional
-//			| comando_repetitivo
+comando: 	atribuicao PONTO_E_VIRGULA
+//			| chamada_procedimento PONTO_E_VIRGULA
+//			| desvio PONTO_E_VIRGULA
+//			| comando_condicional PONTO_E_VIRGULA
+//			| comando_repetitivo PONTO_E_VIRGULA
 ;
 
 //Regra 19:
-atribuicao	: variavel
+atribuicao	: 
+			variavel
 			{
 				empilhaVarNivelDestino(var->nivel);
 				empilhaVarDeslocamento(var->var.deslocamento);
@@ -266,14 +269,18 @@ atribuicao	: variavel
 				char buff[5 + 10];
 				snprintf(buff,15,"ARMZ %d, %d",nivel_destino,deslocamento);
 				geraCodigo (NULL, buff);
-			};
+			}
+			;
 
 //Regra 25: lista de expressoes
-lista_expressoes: lista_expressoes VIRGULA expressao| expressao;
+//lista_expressoes: lista_expressoes VIRGULA expressao| expressao;
 
 //Regra 25: expressao
 expressao: 	expressao_simples 
-			| expressao_simples relacao expressao_simples {geraOperacao();};
+			| expressao_simples relacao expressao_simples 
+			{
+				geraOperacao();
+			};
 
 //Regra 26: relacao
 relacao: 	IGUAL {empilhaOperacao(OP_IGUAL);}
@@ -290,7 +297,10 @@ mais_menos_epsilon	: MAIS {sinal = 0;}
 mais_menos_or	: MAIS {empilhaOperacao(OP_SOMA);}
 				| MENOS {empilhaOperacao(OP_SUBTRACAO);}
 				| T_OR {empilhaOperacao(OP_OR);};
-expressao_simples	: expressao_simples mais_menos_or termo {geraOperacao();}
+expressao_simples	: expressao_simples mais_menos_or termo 
+					{
+						geraOperacao();
+					}
 					| mais_menos_epsilon termo {if (sinal) geraCodigo(NULL, "INVR \0");};
 					
 
@@ -298,7 +308,10 @@ expressao_simples	: expressao_simples mais_menos_or termo {geraOperacao();}
 mult_div_and	: MULTIPLICACAO {empilhaOperacao(OP_MULTIPLICACAO);} 
 				| T_DIV {empilhaOperacao(OP_DIVISAO_INTEIRA);}
 				| T_AND {empilhaOperacao(OP_AND);};
-termo	: termo mult_div_and fator {geraOperacao();}
+termo	: termo mult_div_and fator 
+		{
+			geraOperacao();
+		}
 		| fator;
 
 
@@ -306,7 +319,7 @@ termo	: termo mult_div_and fator {geraOperacao();}
 fator: 	variavel 
 		{ 
 			geraCRVL();
-			geraOperacao(); 
+			//geraOperacao(); 
 		}
 		| numero
 //		| chamada_funcao
@@ -315,38 +328,49 @@ fator: 	variavel
 
 
 //Regra 30: variavel
-variavel	: IDENT
+variavel	: 
+				IDENT
 				{ 
-					var = busca(&ts,token);
+					strcpy(tokenAtual,token);
+					//Salva token atual
+					var = busca(&ts,tokenAtual);
 					if(var == NULL)
 					{
 						//gera erro
 						char buff[100];
-	          			snprintf(buff,100,"Variavel %s nao foi declarada",token);
+	          			snprintf(buff,100,"Erro: Variavel '%s' nao foi declarada!\n",tokenAtual);
 						fprintf(stderr,"%s",buff);
 						exit(1);
 					}
 
 				}
-			| IDENT 
+			/*
+			| 
+				
+				IDENT 
 				{ 
-					var = busca(&ts,token);
+					strcpy(tokenAtual,token);
+					printf("2-Salvou token %s\n",tokenAtual);
+					var = busca(&ts,tokenAtual);
 					if(var == NULL)
 					{
 						//gera erro
 						char buff[100];
-	          			snprintf(buff,100,"Variavel %s nao foi declarada",token);
+	          			snprintf(buff,100,"Erro: Variavel '%s' nao foi declarada!\n",tokenAtual);
 						fprintf(stderr,"%s",buff);
 						exit(1);
 					}
 
 				} 
-			lista_expressoes;
+			lista_expressoes
+			*/
+			;
 
 //Regra 32: Numero
 numero: NUMERO {
 			char buff[5 + 10];
-			snprintf(buff,15,"CRCT %s",token);
+			strcpy(tokenAtual,token);
+			snprintf(buff,15,"CRCT %s",tokenAtual);
 			geraCodigo (NULL, buff);
 			};
 

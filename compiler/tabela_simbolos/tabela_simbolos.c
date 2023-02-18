@@ -21,18 +21,32 @@ void insere(TabelaSimbolos* ts,Item* item)
 	ts->ultimo->next = NULL;
 	ts->ultimo = item;
 	ts->tamanho++;
+
 	return;
 }
 
 Item* busca(TabelaSimbolos* ts,char* identificador)
 {
+	int encontrou = 0;
+	printf("Buscando item %s na tabela de simbolos\n",identificador);
 	Item* elem = ts->ultimo;
-	while(elem != NULL)
+
+	elem = ts->ultimo;
+	for(int i = 0; i < ts->tamanho;i++)
 	{
 		if(!strcmp(identificador,elem->identificador))
+		{
+			encontrou = 1;
 			break;
+		}
 		else
 			elem = elem->prev;
+	}
+
+	if(!encontrou)
+	{
+		printf("Item nao encontrado\n");
+		elem = NULL;
 	}
 
 	return elem;

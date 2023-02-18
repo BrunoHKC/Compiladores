@@ -43,13 +43,10 @@ void push(Stack* s,void* content)
 void* pop(Stack* s)
 {
 	void* value = NULL;
-	printf("Stack = %d\n",s);
 	if(s != NULL)
 	{
-		printf("topo = %d\n",s->top);
 		if(s->top != NULL || s->top != 0)
 		{
-			printf("Entrou\n");
 			Node* to_remove = s->top;
 			value = s->top->content;
 			s->top = s->top->prev;
@@ -57,7 +54,10 @@ void* pop(Stack* s)
 			free(to_remove);
 		}
 		else
+		{
 			printf("[STACK] pop em uma pilha vazia!!");
+			exit(1);
+		}
 		
 	}
 	

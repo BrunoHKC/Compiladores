@@ -1,8 +1,21 @@
      INPP
      AMEM 3
-     CRCT 0
+     CRCT 3
      ARMZ 1, 0
-     CRVL 1, 1
+     CRCT 0
+     ARMZ 1, 1
+     R00: NADA
+     CRVL 1, 0
+     CRCT 0
+     CMMA 
+     DSVF R01
+     CRVL 1, 0
+     CRCT 1
+     SUBT 
+     ARMZ 1, 0
+     DSVS R00
+     R01: NADA
+     CRVL 1, 0
      CRCT 2
      SOMA 
      CRCT 3

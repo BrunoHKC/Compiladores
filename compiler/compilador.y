@@ -37,6 +37,7 @@ int nivel_lexico = 0;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
+int contador_rotulo = 0;
 
 int tipoExpressao;
 
@@ -50,6 +51,9 @@ Stack* pilhaOperacoes;
 Stack* pilhaVarNivelDestino;
 Stack* pilhaVarDeslocamentos;
 
+//Pilha de rotulos
+Stack* pilhaRotulo;
+
 //Tabela de simbolos
 TabelaSimbolos ts;
 
@@ -59,6 +63,16 @@ Item* var = NULL;
 
 #define YYSTYPE char *
 
+char* geraRotulo()
+{
+	char* rotulo = (char*)malloc(4*sizeof(char));
+	rotulo[0] = 'R';
+	rotulo[1] = '0' + (contador_rotulo/10)%10;
+	rotulo[2] = '0' + contador_rotulo%10;
+	rotulo[3] = '\0';
+	contador_rotulo++;
+	return rotulo;
+}
 
 void geraCRVL() {
 	char buff[5 + 10];
@@ -68,7 +82,6 @@ void geraCRVL() {
 
 void empilhaOperacao(int operacao)
 {	
-	printf("Empilhando operacao\n");
 	switch(operacao)
 	{
 		case OP_IGUAL:
@@ -101,7 +114,6 @@ void empilhaOperacao(int operacao)
 			break;
 	}
 
-	printf("Atribuiu tipo\n");
 	
 	int* new_operacao = (int*)malloc(sizeof(int));
 	*new_operacao = operacao;
@@ -286,15 +298,16 @@ comando_composto: T_BEGIN comando  comando_composto_aux T_END;
 
 //Regra 17 e 18: comando (omitido comando sem rotulo)
 comando: 	atribuicao PONTO_E_VIRGULA
+			| comando_repetitivo PONTO_E_VIRGULA
 //			| chamada_procedimento PONTO_E_VIRGULA
 //			| desvio PONTO_E_VIRGULA
 //			| comando_condicional PONTO_E_VIRGULA
-//			| comando_repetitivo PONTO_E_VIRGULA
 ;
 
 //Regra 19:
 atribuicao	: 
 			{
+				printf("--Inicia atribuicao--\n");
 				//reseta tipo
 				tipoExpressao = TYPE_UNDEFINED;
 				printf("Resetou tipo expressao %d\n",tipoExpressao);
@@ -320,11 +333,63 @@ atribuicao	:
 				char buff[5 + 10];
 				snprintf(buff,15,"ARMZ %d, %d",nivel_destino,deslocamento);
 				geraCodigo (NULL, buff);
+				printf("--Fim atribuicao--\n");
 			}
 			;
 
-//Regra 25: lista de expressoes
-//lista_expressoes: lista_expressoes VIRGULA expressao| expressao;
+
+//Regra 23: comando repetitivo
+comando_repetitivo	: T_WHILE
+ 					{
+						printf("--Inicio while--\n");
+						//Cria rotulo entrada e empilha
+						char* rotulo_entrada = geraRotulo();
+						printf("Rotulo entrada %s\n",rotulo_entrada);
+						push(pilhaRotulo,rotulo_entrada);
+
+						//Cria rotulo saida e empilha
+						char* rotulo_saida = geraRotulo();
+						printf("Rotulo saida %s\n",rotulo_saida);
+						push(pilhaRotulo,rotulo_saida);
+
+						//Insere rotulo entrada no codgo MEPA
+						char buff[5 + 10];
+						snprintf(buff,15,"%s: NADA",rotulo_entrada);
+						geraCodigo (NULL, buff);
+					}
+					expressao 
+					{
+						//recupera rotulos
+						char* rotulo_saida = pop(pilhaRotulo);
+						char* rotulo_entrada = pop(pilhaRotulo);
+
+						//desvia se falso
+						char buff[5 + 10];
+						snprintf(buff,15,"DSVF %s",rotulo_saida);
+						geraCodigo (NULL, buff);
+
+						//empilha rotulos
+						push(pilhaRotulo,rotulo_entrada);
+						push(pilhaRotulo,rotulo_saida);
+
+					}
+					T_DO comando_composto
+					{
+						//recupera rotulos
+						char* rotulo_saida = pop(pilhaRotulo);
+						char* rotulo_entrada = pop(pilhaRotulo);
+						//desvia sempre
+						char buff[5 + 10];
+						snprintf(buff,15,"DSVS %s",rotulo_entrada);
+						geraCodigo (NULL, buff);
+
+						//Insere rotulo saida no codgo MEPA
+						snprintf(buff,15,"%s: NADA",rotulo_saida);
+						geraCodigo (NULL, buff);
+						printf("--Fim while--\n");
+
+					};
+
 
 //Regra 25: expressao
 expressao: 	
@@ -397,26 +462,6 @@ variavel	:
 					}
 
 				}
-			/*
-			| 
-				
-				IDENT 
-				{ 
-					strcpy(tokenAtual,token);
-					printf("2-Salvou token %s\n",tokenAtual);
-					var = busca(&ts,tokenAtual);
-					if(var == NULL)
-					{
-						//gera erro
-						char buff[100];
-	          			snprintf(buff,100,"Erro: Variavel '%s' nao foi declarada!\n",tokenAtual);
-						fprintf(stderr,"%s",buff);
-						exit(1);
-					}
-
-				} 
-			lista_expressoes
-			*/
 			;
 
 //Regra 32: Numero
@@ -464,6 +509,8 @@ int main (int argc, char** argv) {
 
 	pilhaVarDeslocamentos = initStack();
 	pilhaVarNivelDestino = initStack();
+
+	pilhaRotulo = initStack();
 
    yyin=fp;
    yyparse();

@@ -29,11 +29,11 @@ Buscando item m na tabela de simbolos
  atribuicao      # := 
  numero      # 0 
  pt_virgula      # ; 
-Stack = -1027594304
-topo = -1027593248
+Stack = -884988096
+topo = -884987040
 Entrou
-Stack = -1027594320
-topo = -1027593216
+Stack = -884988112
+topo = -884987008
 Entrou
  ident      # n 
 Resetou tipo expressao 0
@@ -47,25 +47,25 @@ Empilhando operacao
 Atribuiu tipo
  numero      # 2 
  fecha_parenteses     # ) 
-Stack = -1027594336
-topo = -1027593152
+Stack = -884988128
+topo = -884986944
 Entrou
  multiplicacao     # * 
 Empilhando operacao
 Atribuiu tipo
  numero      # 3 
-Stack = -1027594336
-topo = -1027593136
+Stack = -884988128
+topo = -884986928
 Entrou
  pt_virgula      # ; 
-Stack = -1027594304
-topo = -1027593248
+Stack = -884988096
+topo = -884987040
 Entrou
-Stack = -1027594320
-topo = -1027593184
+Stack = -884988112
+topo = -884986976
 Entrou
 end      # end 
-Stack = -1027594352
-topo = -1027593808
+Stack = -884988144
+topo = -884987600
 Entrou
  ponto      # . 

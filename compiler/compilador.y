@@ -206,6 +206,8 @@ bloco       : {
           			geraCodigo (NULL, buff);
   			  }
 
+			  parte_declara_subrotinas
+
               comando_composto
               { 
               	
@@ -235,14 +237,16 @@ tipo        : INTEGER { atualizaTipos(&ts, num_vars, TYPE_INT); }
 //Regra 8: parte de declaracoes de variaveis
 parte_declara_vars_aux	: parte_declara_vars_aux PONTO_E_VIRGULA declara_vars
 						| VAR declara_vars;
-parte_declara_vars		: parte_declara_vars_aux PONTO_E_VIRGULA;
+parte_declara_vars		: //epsilon 
+						| parte_declara_vars_aux PONTO_E_VIRGULA;
 
 
 //Regra 9: declaracao de variaveis
-declara_vars : { 	/* zera contador */
+declara_vars 	:
+				{ 	/* zera contador */
 					num_vars = 0; 
-			   }
-              lista_idents DOIS_PONTOS tipo
+			   	}
+              	lista_idents DOIS_PONTOS tipo
 ;
 
 
@@ -265,6 +269,15 @@ lista_idents: lista_idents VIRGULA IDENT
               	num_vars++;
             }
 ;
+
+//Regra 11: parte declaracoes de sub-rotinas
+parte_declara_subrotinas: 	//epsilon
+							| parte_declara_subrotinas daclara_procedimento
+//							| parte_declara_subrotinas declara_funcao
+							;
+
+//Regra 12: declaracao de procedimento
+daclara_procedimento: T_PROCEDURE 
 
 //Regra 16: comando composto
 comando_composto_aux: comando_composto_aux comando PONTO_E_VIRGULA | ;
@@ -472,6 +485,12 @@ comando_repetitivo	: T_WHILE
 
 					};
 
+//Regra 24: lista expressoes
+/*
+lista_expressoes_aux: 
+					| VIRGULA expressao lista_expressoes_aux;
+lista_expressoes	: expressao lista_expressoes_aux;
+*/
 
 //Regra 25: expressao
 expressao: 	
@@ -528,31 +547,56 @@ termo	: termo mult_div_and fator
 //Regra 29: fator
 fator: 	variavel 
 		{ 
-			geraCRVL();
+			if(var->categoria == CAT_PARAM_FORMAL_SIMPLES)
+			{
+				if(var->param.passagem == REFERENCIA)
+				{
+					//Se eh um parametro por referencia
+					char buff[5 + 10];
+					sprintf(buff, "CRVI %d, %d", var->nivel, var->param.deslocamento);
+					geraCodigo(NULL, buff);
+				}
+				else
+				{
+					//Se eh um parametro por valor ou variavel simples
+					char buff[5 + 10];
+					sprintf(buff, "CRVL %d, %d", var->nivel, var->param.deslocamento);
+					geraCodigo(NULL, buff);
+				}
+			}
+			else
+			{
+				//Se eh um parametro por valor ou variavel simples
+				char buff[5 + 10];
+				sprintf(buff, "CRVL %d, %d", var->nivel, var->param.deslocamento);
+				geraCodigo(NULL, buff);
+			}
 		}
 		| numero
+		| TRUE 
+		{
+			char buff[5 + 10];
+			sprintf(buff, "CRCT 1");
+			geraCodigo(NULL, buff);
+		}
+		| FALSE
+		{
+			char buff[5 + 10];
+			sprintf(buff, "CRCT 0");
+			geraCodigo(NULL, buff);
+		}
 //		| chamada_funcao
 		| ABRE_PARENTESES expressao FECHA_PARENTESES
-		| T_NOT {empilhaOperacao(OP_NOT);} fator;
+		| T_NOT fator
+		{
+			geraCodigo(NULL, "NEGA");
+		};
 
 
 //Regra 30: variavel
 variavel	: 
-				IDENT
-				{ 
-					strcpy(tokenAtual,token);
-					//Salva token atual
-					var = busca(&ts,tokenAtual);
-					if(var == NULL)
-					{
-						//gera erro
-						char buff[100];
-	          			snprintf(buff,100,"Erro: Variavel '%s' nao foi declarada!\n",tokenAtual);
-						yyerror(buff);
-						exit(1);
-					}
-
-				}
+				identificador
+//				| identificador lista_expressoes
 			;
 
 //Regra 32: Numero
@@ -565,6 +609,22 @@ numero: NUMERO {
 			snprintf(buff,15,"CRCT %s",tokenAtual);
 			geraCodigo (NULL, buff);
 			};
+
+identificador: IDENT
+				{ 
+					strcpy(tokenAtual,token);
+					//Salva token atual
+					var = busca(&ts,tokenAtual);
+					if(var == NULL)
+					{
+						//gera erro
+						char buff[100];
+	          			snprintf(buff,100,"Erro: identificador '%s' nao existe!\n",tokenAtual);
+						yyerror(buff);
+						exit(1);
+					}
+
+				}
 
 %%
 

@@ -8,9 +8,6 @@ Terminals which are not used
    T_PROCEDURE
    T_FUNCTION
    T_GOTO
-   T_IF
-   T_THEN
-   T_ELSE
 
 
 Grammar
@@ -49,58 +46,70 @@ Grammar
 
    18 comando: atribuicao PONTO_E_VIRGULA
    19        | comando_repetitivo PONTO_E_VIRGULA
+   20        | comando_condicional PONTO_E_VIRGULA
 
-   20 @5: /* empty */
+   21 @5: /* empty */
 
-   21 @6: /* empty */
+   22 @6: /* empty */
 
-   22 atribuicao: @5 variavel @6 ATRIBUICAO expressao
+   23 atribuicao: @5 variavel @6 ATRIBUICAO expressao
 
-   23 @7: /* empty */
+   24 comando_condicional_else: /* empty */
+   25                         | T_ELSE comando_composto
 
-   24 @8: /* empty */
+   26 @7: /* empty */
 
-   25 comando_repetitivo: T_WHILE @7 expressao @8 T_DO comando_composto
+   27 @8: /* empty */
 
-   26 expressao: expressao_simples
-   27          | expressao_simples relacao expressao_simples
+   28 @9: /* empty */
 
-   28 relacao: IGUAL
-   29        | DIFERENTE
-   30        | MENOR
-   31        | MENOR_IGUAL
-   32        | MAIOR_IGUAL
-   33        | MAIOR
+   29 comando_condicional: @7 T_IF expressao T_THEN @8 comando_composto @9 comando_condicional_else
 
-   34 mais_menos_epsilon: MAIS
-   35                   | MENOS
-   36                   | /* empty */
+   30 @10: /* empty */
 
-   37 mais_menos_or: MAIS
-   38              | MENOS
-   39              | T_OR
+   31 @11: /* empty */
 
-   40 expressao_simples: expressao_simples mais_menos_or termo
-   41                  | mais_menos_epsilon termo
+   32 comando_repetitivo: T_WHILE @10 expressao @11 T_DO comando_composto
 
-   42 mult_div_and: MULTIPLICACAO
-   43             | T_DIV
-   44             | T_AND
+   33 expressao: expressao_simples
+   34          | expressao_simples relacao expressao_simples
 
-   45 termo: termo mult_div_and fator
-   46      | fator
+   35 relacao: IGUAL
+   36        | DIFERENTE
+   37        | MENOR
+   38        | MENOR_IGUAL
+   39        | MAIOR_IGUAL
+   40        | MAIOR
 
-   47 fator: variavel
-   48      | numero
-   49      | ABRE_PARENTESES expressao FECHA_PARENTESES
+   41 mais_menos_epsilon: MAIS
+   42                   | MENOS
+   43                   | /* empty */
 
-   50 @9: /* empty */
+   44 mais_menos_or: MAIS
+   45              | MENOS
+   46              | T_OR
 
-   51 fator: T_NOT @9 fator
+   47 expressao_simples: expressao_simples mais_menos_or termo
+   48                  | mais_menos_epsilon termo
 
-   52 variavel: IDENT
+   49 mult_div_and: MULTIPLICACAO
+   50             | T_DIV
+   51             | T_AND
 
-   53 numero: NUMERO
+   52 termo: termo mult_div_and fator
+   53      | fator
+
+   54 fator: variavel
+   55      | numero
+   56      | ABRE_PARENTESES expressao FECHA_PARENTESES
+
+   57 @12: /* empty */
+
+   58 fator: T_NOT @12 fator
+
+   59 variavel: IDENT
+
+   60 numero: NUMERO
 
 
 Terminals, with rules where they appear
@@ -108,10 +117,10 @@ Terminals, with rules where they appear
 $end (0) 0
 error (256)
 PROGRAM (258) 2
-ABRE_PARENTESES (259) 2 49
-FECHA_PARENTESES (260) 2 49
+ABRE_PARENTESES (259) 2 56
+FECHA_PARENTESES (260) 2 56
 VIRGULA (261) 13
-PONTO_E_VIRGULA (262) 2 8 10 18 19
+PONTO_E_VIRGULA (262) 2 8 10 18 19 20
 DOIS_PONTOS (263) 12
 PONTO (264) 2
 INTEGER (265) 6
@@ -119,18 +128,18 @@ BOOLEAN (266) 7
 T_BEGIN (267) 17
 T_END (268) 17
 VAR (269) 9
-IDENT (270) 2 13 14 52
-NUMERO (271) 53
-ATRIBUICAO (272) 22
-IGUAL (273) 28
-DIFERENTE (274) 29
-MAIOR (275) 33
-MENOR (276) 30
-MAIOR_IGUAL (277) 32
-MENOR_IGUAL (278) 31
-MAIS (279) 34 37
-MENOS (280) 35 38
-MULTIPLICACAO (281) 42
+IDENT (270) 2 13 14 59
+NUMERO (271) 60
+ATRIBUICAO (272) 23
+IGUAL (273) 35
+DIFERENTE (274) 36
+MAIOR (275) 40
+MENOR (276) 37
+MAIOR_IGUAL (277) 39
+MENOR_IGUAL (278) 38
+MAIS (279) 41 44
+MENOS (280) 42 45
+MULTIPLICACAO (281) 49
 DIVISAO (282)
 T_LABEL (283)
 T_TYPE (284)
@@ -139,15 +148,15 @@ T_OF (286)
 T_PROCEDURE (287)
 T_FUNCTION (288)
 T_GOTO (289)
-T_IF (290)
-T_THEN (291)
-T_ELSE (292)
-T_WHILE (293) 25
-T_DO (294) 25
-T_OR (295) 39
-T_DIV (296) 43
-T_AND (297) 44
-T_NOT (298) 51
+T_IF (290) 29
+T_THEN (291) 29
+T_ELSE (292) 25
+T_WHILE (293) 32
+T_DO (294) 32
+T_OR (295) 46
+T_DIV (296) 50
+T_AND (297) 51
+T_NOT (298) 58
 
 
 Nonterminals, with rules where they appear
@@ -179,43 +188,53 @@ lista_idents (55)
 comando_composto_aux (56)
     on left: 15 16, on right: 15 17
 comando_composto (57)
-    on left: 17, on right: 5 25
+    on left: 17, on right: 5 25 29 32
 comando (58)
-    on left: 18 19, on right: 15 17
+    on left: 18 19 20, on right: 15 17
 atribuicao (59)
-    on left: 22, on right: 18
+    on left: 23, on right: 18
 @5 (60)
-    on left: 20, on right: 22
+    on left: 21, on right: 23
 @6 (61)
-    on left: 21, on right: 22
-comando_repetitivo (62)
-    on left: 25, on right: 19
-@7 (63)
-    on left: 23, on right: 25
-@8 (64)
-    on left: 24, on right: 25
-expressao (65)
-    on left: 26 27, on right: 22 25 49
-relacao (66)
-    on left: 28 29 30 31 32 33, on right: 27
-mais_menos_epsilon (67)
-    on left: 34 35 36, on right: 41
-mais_menos_or (68)
-    on left: 37 38 39, on right: 40
-expressao_simples (69)
-    on left: 40 41, on right: 26 27 40
-mult_div_and (70)
-    on left: 42 43 44, on right: 45
-termo (71)
-    on left: 45 46, on right: 40 41 45
-fator (72)
-    on left: 47 48 49 51, on right: 45 46 51
-@9 (73)
-    on left: 50, on right: 51
-variavel (74)
-    on left: 52, on right: 22 47
-numero (75)
-    on left: 53, on right: 48
+    on left: 22, on right: 23
+comando_condicional_else (62)
+    on left: 24 25, on right: 29
+comando_condicional (63)
+    on left: 29, on right: 20
+@7 (64)
+    on left: 26, on right: 29
+@8 (65)
+    on left: 27, on right: 29
+@9 (66)
+    on left: 28, on right: 29
+comando_repetitivo (67)
+    on left: 32, on right: 19
+@10 (68)
+    on left: 30, on right: 32
+@11 (69)
+    on left: 31, on right: 32
+expressao (70)
+    on left: 33 34, on right: 23 29 32 56
+relacao (71)
+    on left: 35 36 37 38 39 40, on right: 34
+mais_menos_epsilon (72)
+    on left: 41 42 43, on right: 48
+mais_menos_or (73)
+    on left: 44 45 46, on right: 47
+expressao_simples (74)
+    on left: 47 48, on right: 33 34 47
+mult_div_and (75)
+    on left: 49 50 51, on right: 52
+termo (76)
+    on left: 52 53, on right: 47 48 52
+fator (77)
+    on left: 54 55 56 58, on right: 52 53 58
+@12 (78)
+    on left: 57, on right: 58
+variavel (79)
+    on left: 59, on right: 23 54
+numero (80)
+    on left: 60, on right: 55
 
 
 state 0
@@ -429,12 +448,15 @@ state 25
 
     T_WHILE  shift, and go to state 28
 
-    $default  reduce using rule 20 (@5)
+    T_IF      reduce using rule 26 (@7)
+    $default  reduce using rule 21 (@5)
 
-    comando             go to state 29
-    atribuicao          go to state 30
-    @5                  go to state 31
-    comando_repetitivo  go to state 32
+    comando              go to state 29
+    atribuicao           go to state 30
+    @5                   go to state 31
+    comando_condicional  go to state 32
+    @7                   go to state 33
+    comando_repetitivo   go to state 34
 
 
 state 26
@@ -448,19 +470,19 @@ state 27
 
    12 declara_vars: @4 lista_idents DOIS_PONTOS . tipo
 
-    INTEGER  shift, and go to state 33
-    BOOLEAN  shift, and go to state 34
+    INTEGER  shift, and go to state 35
+    BOOLEAN  shift, and go to state 36
 
-    tipo  go to state 35
+    tipo  go to state 37
 
 
 state 28
 
-   25 comando_repetitivo: T_WHILE . @7 expressao @8 T_DO comando_composto
+   32 comando_repetitivo: T_WHILE . @10 expressao @11 T_DO comando_composto
 
-    $default  reduce using rule 23 (@7)
+    $default  reduce using rule 30 (@10)
 
-    @7  go to state 36
+    @10  go to state 38
 
 
 state 29
@@ -469,494 +491,600 @@ state 29
 
     $default  reduce using rule 16 (comando_composto_aux)
 
-    comando_composto_aux  go to state 37
+    comando_composto_aux  go to state 39
 
 
 state 30
 
    18 comando: atribuicao . PONTO_E_VIRGULA
 
-    PONTO_E_VIRGULA  shift, and go to state 38
+    PONTO_E_VIRGULA  shift, and go to state 40
 
 
 state 31
 
-   22 atribuicao: @5 . variavel @6 ATRIBUICAO expressao
+   23 atribuicao: @5 . variavel @6 ATRIBUICAO expressao
 
-    IDENT  shift, and go to state 39
+    IDENT  shift, and go to state 41
 
-    variavel  go to state 40
+    variavel  go to state 42
 
 
 state 32
 
-   19 comando: comando_repetitivo . PONTO_E_VIRGULA
+   20 comando: comando_condicional . PONTO_E_VIRGULA
 
-    PONTO_E_VIRGULA  shift, and go to state 41
+    PONTO_E_VIRGULA  shift, and go to state 43
 
 
 state 33
+
+   29 comando_condicional: @7 . T_IF expressao T_THEN @8 comando_composto @9 comando_condicional_else
+
+    T_IF  shift, and go to state 44
+
+
+state 34
+
+   19 comando: comando_repetitivo . PONTO_E_VIRGULA
+
+    PONTO_E_VIRGULA  shift, and go to state 45
+
+
+state 35
 
     6 tipo: INTEGER .
 
     $default  reduce using rule 6 (tipo)
 
 
-state 34
+state 36
 
     7 tipo: BOOLEAN .
 
     $default  reduce using rule 7 (tipo)
 
 
-state 35
+state 37
 
    12 declara_vars: @4 lista_idents DOIS_PONTOS tipo .
 
     $default  reduce using rule 12 (declara_vars)
 
 
-state 36
+state 38
 
-   25 comando_repetitivo: T_WHILE @7 . expressao @8 T_DO comando_composto
+   32 comando_repetitivo: T_WHILE @10 . expressao @11 T_DO comando_composto
 
-    MAIS   shift, and go to state 42
-    MENOS  shift, and go to state 43
+    MAIS   shift, and go to state 46
+    MENOS  shift, and go to state 47
 
-    $default  reduce using rule 36 (mais_menos_epsilon)
+    $default  reduce using rule 43 (mais_menos_epsilon)
 
-    expressao           go to state 44
-    mais_menos_epsilon  go to state 45
-    expressao_simples   go to state 46
+    expressao           go to state 48
+    mais_menos_epsilon  go to state 49
+    expressao_simples   go to state 50
 
 
-state 37
+state 39
 
    15 comando_composto_aux: comando_composto_aux . comando
    17 comando_composto: T_BEGIN comando comando_composto_aux . T_END
 
-    T_END    shift, and go to state 47
+    T_END    shift, and go to state 51
     T_WHILE  shift, and go to state 28
 
-    $default  reduce using rule 20 (@5)
+    T_IF      reduce using rule 26 (@7)
+    $default  reduce using rule 21 (@5)
 
-    comando             go to state 48
-    atribuicao          go to state 30
-    @5                  go to state 31
-    comando_repetitivo  go to state 32
+    comando              go to state 52
+    atribuicao           go to state 30
+    @5                   go to state 31
+    comando_condicional  go to state 32
+    @7                   go to state 33
+    comando_repetitivo   go to state 34
 
 
-state 38
+state 40
 
    18 comando: atribuicao PONTO_E_VIRGULA .
 
     $default  reduce using rule 18 (comando)
 
 
-state 39
-
-   52 variavel: IDENT .
-
-    $default  reduce using rule 52 (variavel)
-
-
-state 40
-
-   22 atribuicao: @5 variavel . @6 ATRIBUICAO expressao
-
-    $default  reduce using rule 21 (@6)
-
-    @6  go to state 49
-
-
 state 41
+
+   59 variavel: IDENT .
+
+    $default  reduce using rule 59 (variavel)
+
+
+state 42
+
+   23 atribuicao: @5 variavel . @6 ATRIBUICAO expressao
+
+    $default  reduce using rule 22 (@6)
+
+    @6  go to state 53
+
+
+state 43
+
+   20 comando: comando_condicional PONTO_E_VIRGULA .
+
+    $default  reduce using rule 20 (comando)
+
+
+state 44
+
+   29 comando_condicional: @7 T_IF . expressao T_THEN @8 comando_composto @9 comando_condicional_else
+
+    MAIS   shift, and go to state 46
+    MENOS  shift, and go to state 47
+
+    $default  reduce using rule 43 (mais_menos_epsilon)
+
+    expressao           go to state 54
+    mais_menos_epsilon  go to state 49
+    expressao_simples   go to state 50
+
+
+state 45
 
    19 comando: comando_repetitivo PONTO_E_VIRGULA .
 
     $default  reduce using rule 19 (comando)
 
 
-state 42
-
-   34 mais_menos_epsilon: MAIS .
-
-    $default  reduce using rule 34 (mais_menos_epsilon)
-
-
-state 43
-
-   35 mais_menos_epsilon: MENOS .
-
-    $default  reduce using rule 35 (mais_menos_epsilon)
-
-
-state 44
-
-   25 comando_repetitivo: T_WHILE @7 expressao . @8 T_DO comando_composto
-
-    $default  reduce using rule 24 (@8)
-
-    @8  go to state 50
-
-
-state 45
-
-   41 expressao_simples: mais_menos_epsilon . termo
-
-    ABRE_PARENTESES  shift, and go to state 51
-    IDENT            shift, and go to state 39
-    NUMERO           shift, and go to state 52
-    T_NOT            shift, and go to state 53
-
-    termo     go to state 54
-    fator     go to state 55
-    variavel  go to state 56
-    numero    go to state 57
-
-
 state 46
 
-   26 expressao: expressao_simples .
-   27          | expressao_simples . relacao expressao_simples
-   40 expressao_simples: expressao_simples . mais_menos_or termo
+   41 mais_menos_epsilon: MAIS .
 
-    IGUAL        shift, and go to state 58
-    DIFERENTE    shift, and go to state 59
-    MAIOR        shift, and go to state 60
-    MENOR        shift, and go to state 61
-    MAIOR_IGUAL  shift, and go to state 62
-    MENOR_IGUAL  shift, and go to state 63
-    MAIS         shift, and go to state 64
-    MENOS        shift, and go to state 65
-    T_OR         shift, and go to state 66
-
-    $default  reduce using rule 26 (expressao)
-
-    relacao        go to state 67
-    mais_menos_or  go to state 68
+    $default  reduce using rule 41 (mais_menos_epsilon)
 
 
 state 47
+
+   42 mais_menos_epsilon: MENOS .
+
+    $default  reduce using rule 42 (mais_menos_epsilon)
+
+
+state 48
+
+   32 comando_repetitivo: T_WHILE @10 expressao . @11 T_DO comando_composto
+
+    $default  reduce using rule 31 (@11)
+
+    @11  go to state 55
+
+
+state 49
+
+   48 expressao_simples: mais_menos_epsilon . termo
+
+    ABRE_PARENTESES  shift, and go to state 56
+    IDENT            shift, and go to state 41
+    NUMERO           shift, and go to state 57
+    T_NOT            shift, and go to state 58
+
+    termo     go to state 59
+    fator     go to state 60
+    variavel  go to state 61
+    numero    go to state 62
+
+
+state 50
+
+   33 expressao: expressao_simples .
+   34          | expressao_simples . relacao expressao_simples
+   47 expressao_simples: expressao_simples . mais_menos_or termo
+
+    IGUAL        shift, and go to state 63
+    DIFERENTE    shift, and go to state 64
+    MAIOR        shift, and go to state 65
+    MENOR        shift, and go to state 66
+    MAIOR_IGUAL  shift, and go to state 67
+    MENOR_IGUAL  shift, and go to state 68
+    MAIS         shift, and go to state 69
+    MENOS        shift, and go to state 70
+    T_OR         shift, and go to state 71
+
+    $default  reduce using rule 33 (expressao)
+
+    relacao        go to state 72
+    mais_menos_or  go to state 73
+
+
+state 51
 
    17 comando_composto: T_BEGIN comando comando_composto_aux T_END .
 
     $default  reduce using rule 17 (comando_composto)
 
 
-state 48
+state 52
 
    15 comando_composto_aux: comando_composto_aux comando .
 
     $default  reduce using rule 15 (comando_composto_aux)
 
 
-state 49
-
-   22 atribuicao: @5 variavel @6 . ATRIBUICAO expressao
-
-    ATRIBUICAO  shift, and go to state 69
-
-
-state 50
-
-   25 comando_repetitivo: T_WHILE @7 expressao @8 . T_DO comando_composto
-
-    T_DO  shift, and go to state 70
-
-
-state 51
-
-   49 fator: ABRE_PARENTESES . expressao FECHA_PARENTESES
-
-    MAIS   shift, and go to state 42
-    MENOS  shift, and go to state 43
-
-    $default  reduce using rule 36 (mais_menos_epsilon)
-
-    expressao           go to state 71
-    mais_menos_epsilon  go to state 45
-    expressao_simples   go to state 46
-
-
-state 52
-
-   53 numero: NUMERO .
-
-    $default  reduce using rule 53 (numero)
-
-
 state 53
 
-   51 fator: T_NOT . @9 fator
+   23 atribuicao: @5 variavel @6 . ATRIBUICAO expressao
 
-    $default  reduce using rule 50 (@9)
-
-    @9  go to state 72
+    ATRIBUICAO  shift, and go to state 74
 
 
 state 54
 
-   41 expressao_simples: mais_menos_epsilon termo .
-   45 termo: termo . mult_div_and fator
+   29 comando_condicional: @7 T_IF expressao . T_THEN @8 comando_composto @9 comando_condicional_else
 
-    MULTIPLICACAO  shift, and go to state 73
-    T_DIV          shift, and go to state 74
-    T_AND          shift, and go to state 75
-
-    $default  reduce using rule 41 (expressao_simples)
-
-    mult_div_and  go to state 76
+    T_THEN  shift, and go to state 75
 
 
 state 55
 
-   46 termo: fator .
+   32 comando_repetitivo: T_WHILE @10 expressao @11 . T_DO comando_composto
 
-    $default  reduce using rule 46 (termo)
+    T_DO  shift, and go to state 76
 
 
 state 56
 
-   47 fator: variavel .
+   56 fator: ABRE_PARENTESES . expressao FECHA_PARENTESES
 
-    $default  reduce using rule 47 (fator)
+    MAIS   shift, and go to state 46
+    MENOS  shift, and go to state 47
+
+    $default  reduce using rule 43 (mais_menos_epsilon)
+
+    expressao           go to state 77
+    mais_menos_epsilon  go to state 49
+    expressao_simples   go to state 50
 
 
 state 57
 
-   48 fator: numero .
+   60 numero: NUMERO .
 
-    $default  reduce using rule 48 (fator)
+    $default  reduce using rule 60 (numero)
 
 
 state 58
 
-   28 relacao: IGUAL .
+   58 fator: T_NOT . @12 fator
 
-    $default  reduce using rule 28 (relacao)
+    $default  reduce using rule 57 (@12)
+
+    @12  go to state 78
 
 
 state 59
 
-   29 relacao: DIFERENTE .
+   48 expressao_simples: mais_menos_epsilon termo .
+   52 termo: termo . mult_div_and fator
 
-    $default  reduce using rule 29 (relacao)
+    MULTIPLICACAO  shift, and go to state 79
+    T_DIV          shift, and go to state 80
+    T_AND          shift, and go to state 81
+
+    $default  reduce using rule 48 (expressao_simples)
+
+    mult_div_and  go to state 82
 
 
 state 60
 
-   33 relacao: MAIOR .
+   53 termo: fator .
 
-    $default  reduce using rule 33 (relacao)
+    $default  reduce using rule 53 (termo)
 
 
 state 61
 
-   30 relacao: MENOR .
+   54 fator: variavel .
 
-    $default  reduce using rule 30 (relacao)
+    $default  reduce using rule 54 (fator)
 
 
 state 62
 
-   32 relacao: MAIOR_IGUAL .
+   55 fator: numero .
 
-    $default  reduce using rule 32 (relacao)
+    $default  reduce using rule 55 (fator)
 
 
 state 63
 
-   31 relacao: MENOR_IGUAL .
+   35 relacao: IGUAL .
 
-    $default  reduce using rule 31 (relacao)
+    $default  reduce using rule 35 (relacao)
 
 
 state 64
 
-   37 mais_menos_or: MAIS .
+   36 relacao: DIFERENTE .
 
-    $default  reduce using rule 37 (mais_menos_or)
+    $default  reduce using rule 36 (relacao)
 
 
 state 65
 
-   38 mais_menos_or: MENOS .
+   40 relacao: MAIOR .
 
-    $default  reduce using rule 38 (mais_menos_or)
+    $default  reduce using rule 40 (relacao)
 
 
 state 66
 
-   39 mais_menos_or: T_OR .
+   37 relacao: MENOR .
 
-    $default  reduce using rule 39 (mais_menos_or)
+    $default  reduce using rule 37 (relacao)
 
 
 state 67
 
-   27 expressao: expressao_simples relacao . expressao_simples
+   39 relacao: MAIOR_IGUAL .
 
-    MAIS   shift, and go to state 42
-    MENOS  shift, and go to state 43
-
-    $default  reduce using rule 36 (mais_menos_epsilon)
-
-    mais_menos_epsilon  go to state 45
-    expressao_simples   go to state 77
+    $default  reduce using rule 39 (relacao)
 
 
 state 68
 
-   40 expressao_simples: expressao_simples mais_menos_or . termo
+   38 relacao: MENOR_IGUAL .
 
-    ABRE_PARENTESES  shift, and go to state 51
-    IDENT            shift, and go to state 39
-    NUMERO           shift, and go to state 52
-    T_NOT            shift, and go to state 53
-
-    termo     go to state 78
-    fator     go to state 55
-    variavel  go to state 56
-    numero    go to state 57
+    $default  reduce using rule 38 (relacao)
 
 
 state 69
 
-   22 atribuicao: @5 variavel @6 ATRIBUICAO . expressao
+   44 mais_menos_or: MAIS .
 
-    MAIS   shift, and go to state 42
-    MENOS  shift, and go to state 43
-
-    $default  reduce using rule 36 (mais_menos_epsilon)
-
-    expressao           go to state 79
-    mais_menos_epsilon  go to state 45
-    expressao_simples   go to state 46
+    $default  reduce using rule 44 (mais_menos_or)
 
 
 state 70
 
-   25 comando_repetitivo: T_WHILE @7 expressao @8 T_DO . comando_composto
+   45 mais_menos_or: MENOS .
 
-    T_BEGIN  shift, and go to state 25
-
-    comando_composto  go to state 80
+    $default  reduce using rule 45 (mais_menos_or)
 
 
 state 71
 
-   49 fator: ABRE_PARENTESES expressao . FECHA_PARENTESES
+   46 mais_menos_or: T_OR .
 
-    FECHA_PARENTESES  shift, and go to state 81
+    $default  reduce using rule 46 (mais_menos_or)
 
 
 state 72
 
-   51 fator: T_NOT @9 . fator
+   34 expressao: expressao_simples relacao . expressao_simples
 
-    ABRE_PARENTESES  shift, and go to state 51
-    IDENT            shift, and go to state 39
-    NUMERO           shift, and go to state 52
-    T_NOT            shift, and go to state 53
+    MAIS   shift, and go to state 46
+    MENOS  shift, and go to state 47
 
-    fator     go to state 82
-    variavel  go to state 56
-    numero    go to state 57
+    $default  reduce using rule 43 (mais_menos_epsilon)
+
+    mais_menos_epsilon  go to state 49
+    expressao_simples   go to state 83
 
 
 state 73
 
-   42 mult_div_and: MULTIPLICACAO .
+   47 expressao_simples: expressao_simples mais_menos_or . termo
 
-    $default  reduce using rule 42 (mult_div_and)
+    ABRE_PARENTESES  shift, and go to state 56
+    IDENT            shift, and go to state 41
+    NUMERO           shift, and go to state 57
+    T_NOT            shift, and go to state 58
+
+    termo     go to state 84
+    fator     go to state 60
+    variavel  go to state 61
+    numero    go to state 62
 
 
 state 74
 
-   43 mult_div_and: T_DIV .
+   23 atribuicao: @5 variavel @6 ATRIBUICAO . expressao
 
-    $default  reduce using rule 43 (mult_div_and)
+    MAIS   shift, and go to state 46
+    MENOS  shift, and go to state 47
+
+    $default  reduce using rule 43 (mais_menos_epsilon)
+
+    expressao           go to state 85
+    mais_menos_epsilon  go to state 49
+    expressao_simples   go to state 50
 
 
 state 75
 
-   44 mult_div_and: T_AND .
+   29 comando_condicional: @7 T_IF expressao T_THEN . @8 comando_composto @9 comando_condicional_else
 
-    $default  reduce using rule 44 (mult_div_and)
+    $default  reduce using rule 27 (@8)
+
+    @8  go to state 86
 
 
 state 76
 
-   45 termo: termo mult_div_and . fator
+   32 comando_repetitivo: T_WHILE @10 expressao @11 T_DO . comando_composto
 
-    ABRE_PARENTESES  shift, and go to state 51
-    IDENT            shift, and go to state 39
-    NUMERO           shift, and go to state 52
-    T_NOT            shift, and go to state 53
+    T_BEGIN  shift, and go to state 25
 
-    fator     go to state 83
-    variavel  go to state 56
-    numero    go to state 57
+    comando_composto  go to state 87
 
 
 state 77
 
-   27 expressao: expressao_simples relacao expressao_simples .
-   40 expressao_simples: expressao_simples . mais_menos_or termo
+   56 fator: ABRE_PARENTESES expressao . FECHA_PARENTESES
 
-    MAIS   shift, and go to state 64
-    MENOS  shift, and go to state 65
-    T_OR   shift, and go to state 66
-
-    $default  reduce using rule 27 (expressao)
-
-    mais_menos_or  go to state 68
+    FECHA_PARENTESES  shift, and go to state 88
 
 
 state 78
 
-   40 expressao_simples: expressao_simples mais_menos_or termo .
-   45 termo: termo . mult_div_and fator
+   58 fator: T_NOT @12 . fator
 
-    MULTIPLICACAO  shift, and go to state 73
-    T_DIV          shift, and go to state 74
-    T_AND          shift, and go to state 75
+    ABRE_PARENTESES  shift, and go to state 56
+    IDENT            shift, and go to state 41
+    NUMERO           shift, and go to state 57
+    T_NOT            shift, and go to state 58
 
-    $default  reduce using rule 40 (expressao_simples)
-
-    mult_div_and  go to state 76
+    fator     go to state 89
+    variavel  go to state 61
+    numero    go to state 62
 
 
 state 79
 
-   22 atribuicao: @5 variavel @6 ATRIBUICAO expressao .
+   49 mult_div_and: MULTIPLICACAO .
 
-    $default  reduce using rule 22 (atribuicao)
+    $default  reduce using rule 49 (mult_div_and)
 
 
 state 80
 
-   25 comando_repetitivo: T_WHILE @7 expressao @8 T_DO comando_composto .
+   50 mult_div_and: T_DIV .
 
-    $default  reduce using rule 25 (comando_repetitivo)
+    $default  reduce using rule 50 (mult_div_and)
 
 
 state 81
 
-   49 fator: ABRE_PARENTESES expressao FECHA_PARENTESES .
+   51 mult_div_and: T_AND .
 
-    $default  reduce using rule 49 (fator)
+    $default  reduce using rule 51 (mult_div_and)
 
 
 state 82
 
-   51 fator: T_NOT @9 fator .
+   52 termo: termo mult_div_and . fator
 
-    $default  reduce using rule 51 (fator)
+    ABRE_PARENTESES  shift, and go to state 56
+    IDENT            shift, and go to state 41
+    NUMERO           shift, and go to state 57
+    T_NOT            shift, and go to state 58
+
+    fator     go to state 90
+    variavel  go to state 61
+    numero    go to state 62
 
 
 state 83
 
-   45 termo: termo mult_div_and fator .
+   34 expressao: expressao_simples relacao expressao_simples .
+   47 expressao_simples: expressao_simples . mais_menos_or termo
 
-    $default  reduce using rule 45 (termo)
+    MAIS   shift, and go to state 69
+    MENOS  shift, and go to state 70
+    T_OR   shift, and go to state 71
+
+    $default  reduce using rule 34 (expressao)
+
+    mais_menos_or  go to state 73
+
+
+state 84
+
+   47 expressao_simples: expressao_simples mais_menos_or termo .
+   52 termo: termo . mult_div_and fator
+
+    MULTIPLICACAO  shift, and go to state 79
+    T_DIV          shift, and go to state 80
+    T_AND          shift, and go to state 81
+
+    $default  reduce using rule 47 (expressao_simples)
+
+    mult_div_and  go to state 82
+
+
+state 85
+
+   23 atribuicao: @5 variavel @6 ATRIBUICAO expressao .
+
+    $default  reduce using rule 23 (atribuicao)
+
+
+state 86
+
+   29 comando_condicional: @7 T_IF expressao T_THEN @8 . comando_composto @9 comando_condicional_else
+
+    T_BEGIN  shift, and go to state 25
+
+    comando_composto  go to state 91
+
+
+state 87
+
+   32 comando_repetitivo: T_WHILE @10 expressao @11 T_DO comando_composto .
+
+    $default  reduce using rule 32 (comando_repetitivo)
+
+
+state 88
+
+   56 fator: ABRE_PARENTESES expressao FECHA_PARENTESES .
+
+    $default  reduce using rule 56 (fator)
+
+
+state 89
+
+   58 fator: T_NOT @12 fator .
+
+    $default  reduce using rule 58 (fator)
+
+
+state 90
+
+   52 termo: termo mult_div_and fator .
+
+    $default  reduce using rule 52 (termo)
+
+
+state 91
+
+   29 comando_condicional: @7 T_IF expressao T_THEN @8 comando_composto . @9 comando_condicional_else
+
+    $default  reduce using rule 28 (@9)
+
+    @9  go to state 92
+
+
+state 92
+
+   29 comando_condicional: @7 T_IF expressao T_THEN @8 comando_composto @9 . comando_condicional_else
+
+    T_ELSE  shift, and go to state 93
+
+    $default  reduce using rule 24 (comando_condicional_else)
+
+    comando_condicional_else  go to state 94
+
+
+state 93
+
+   25 comando_condicional_else: T_ELSE . comando_composto
+
+    T_BEGIN  shift, and go to state 25
+
+    comando_composto  go to state 95
+
+
+state 94
+
+   29 comando_condicional: @7 T_IF expressao T_THEN @8 comando_composto @9 comando_condicional_else .
+
+    $default  reduce using rule 29 (comando_condicional)
+
+
+state 95
+
+   25 comando_condicional_else: T_ELSE comando_composto .
+
+    $default  reduce using rule 25 (comando_condicional_else)

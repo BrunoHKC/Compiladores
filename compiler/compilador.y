@@ -39,7 +39,6 @@ int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
 int contador_rotulo = 0;
 
-int tipoExpressao;
 
 //Pilha de deslocamentos
 Stack* pilhaDeslocamentos;
@@ -89,28 +88,17 @@ void empilhaOperacao(int operacao)
 		case OP_AND:
 		case OP_OR:
 		case OP_NOT:
-			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_BOOL)
-			{
-				printf("Erro semantico: Tipo invalido 1!");
-				exit(1);
-			}
-			tipoExpressao = TYPE_BOOL;
 			break;
 		case OP_MENOR:
 		case OP_MENOR_OU_IGUAL:
 		case OP_MAIOR:
 		case OP_MAIOR_OU_IGUAL:
+			break;
 		case OP_SOMA:
 		case OP_SUBTRACAO:
 		case OP_MULTIPLICACAO:
 		case OP_DIVISAO:
 		case OP_DIVISAO_INTEIRA:
-			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_INT)
-			{
-				printf("Erro semantico: Tipo invalido 2!");
-				exit(1);
-			}
-			tipoExpressao = TYPE_INT;
 			break;
 	}
 
@@ -198,6 +186,7 @@ void geraOperacao() {
 %token T_WHILE T_DO
 %token T_OR T_DIV T_AND T_NOT
 
+%nonassoc T_ELSE
 %%
 
 
@@ -299,18 +288,15 @@ comando_composto: T_BEGIN comando  comando_composto_aux T_END;
 //Regra 17 e 18: comando (omitido comando sem rotulo)
 comando: 	atribuicao PONTO_E_VIRGULA
 			| comando_repetitivo PONTO_E_VIRGULA
+			| comando_condicional PONTO_E_VIRGULA
 //			| chamada_procedimento PONTO_E_VIRGULA
 //			| desvio PONTO_E_VIRGULA
-//			| comando_condicional PONTO_E_VIRGULA
 ;
 
 //Regra 19:
 atribuicao	: 
 			{
 				printf("--Inicia atribuicao--\n");
-				//reseta tipo
-				tipoExpressao = TYPE_UNDEFINED;
-				printf("Resetou tipo expressao %d\n",tipoExpressao);
 			}
 			variavel
 			{
@@ -319,15 +305,8 @@ atribuicao	:
 			}
 			ATRIBUICAO expressao
 			{
-				//Verifica se o tipo da expressao eh o mesmo da variavel
-				if(var->var.tipo != tipoExpressao)
-				{
-					//Gera erro semantico
-					printf("variavel %d expressao %d\n",var->var.tipo,tipoExpressao);
-					printf("Erro semantico: Atribuicao com tipo invalido!\n");
-					exit(1);
-				}
-
+				//TODO: Verifica se o tipo da expressao eh o mesmo da variavel
+				
 				int nivel_destino = *(int*)pop(pilhaVarNivelDestino);
 				int deslocamento = *(int*)pop(pilhaVarDeslocamentos);
 				char buff[5 + 10];
@@ -336,6 +315,55 @@ atribuicao	:
 				printf("--Fim atribuicao--\n");
 			}
 			;
+
+
+//Regra 22: comando condcional
+comando_condicional_else : | T_ELSE comando_composto;
+comando_condicional	: 
+					{
+						printf("--Inicio If--\n");
+					}
+					T_IF expressao T_THEN
+					{
+						//Cria rotulo saida e empilha
+						char* rotulo_entrada_else = geraRotulo();
+						
+						//desvia se falso
+						char buff[5 + 10];
+						snprintf(buff,15,"DSVF %s",rotulo_entrada_else);
+						geraCodigo (NULL, buff);
+
+						//empilha rotulo entrada do else
+						push(pilhaRotulo,rotulo_entrada_else);
+
+					}
+					comando_composto
+					{
+						//Cria rotulo saida e empilha
+						char* rotulo_saida_else = geraRotulo();
+						
+						//desvia sempre
+						char buff[5 + 10];
+						snprintf(buff,15,"DSVS %s",rotulo_saida_else);
+						geraCodigo (NULL, buff);
+				
+						//recupera rotulo entrada do else
+						char* rotulo_entrada_else = pop(pilhaRotulo);
+
+						//Insere rotulo entrada else
+						geraCodigo (rotulo_entrada_else, "NADA");
+
+						push(pilhaRotulo,rotulo_saida_else);
+
+					} comando_condicional_else
+					{
+						//recupera rotulo saida do else
+						char* rotulo_saida_else = pop(pilhaRotulo);
+
+						//Insere rotulo saida else
+						geraCodigo (rotulo_saida_else, "NADA");
+					}
+					;
 
 
 //Regra 23: comando repetitivo
@@ -353,9 +381,7 @@ comando_repetitivo	: T_WHILE
 						push(pilhaRotulo,rotulo_saida);
 
 						//Insere rotulo entrada no codgo MEPA
-						char buff[5 + 10];
-						snprintf(buff,15,"%s: NADA",rotulo_entrada);
-						geraCodigo (NULL, buff);
+						geraCodigo (rotulo_entrada, "NADA");
 					}
 					expressao 
 					{
@@ -384,8 +410,7 @@ comando_repetitivo	: T_WHILE
 						geraCodigo (NULL, buff);
 
 						//Insere rotulo saida no codgo MEPA
-						snprintf(buff,15,"%s: NADA",rotulo_saida);
-						geraCodigo (NULL, buff);
+						geraCodigo (rotulo_saida, "NADA");
 						printf("--Fim while--\n");
 
 					};
@@ -411,7 +436,7 @@ relacao: 	IGUAL {empilhaOperacao(OP_IGUAL);}
 //Regra 27: expressao simples
 mais_menos_epsilon	: MAIS {sinal = 0;}
 					| MENOS {sinal = 1;}
-					| ;
+					| {sinal = 0;};
 mais_menos_or	: MAIS {empilhaOperacao(OP_SOMA);}
 				| MENOS {empilhaOperacao(OP_SUBTRACAO);}
 				| T_OR {empilhaOperacao(OP_OR);};
@@ -467,13 +492,7 @@ variavel	:
 //Regra 32: Numero
 numero: NUMERO {
 
-			if(tipoExpressao != TYPE_UNDEFINED && tipoExpressao != TYPE_INT)
-			{
-				printf("Erro semantico: Tipo invalido!");
-				exit(1);
-			}
-
-			tipoExpressao = TYPE_INT;
+			//TODO: verifica se erro semantico
 
 			char buff[5 + 10];
 			strcpy(tokenAtual,token);

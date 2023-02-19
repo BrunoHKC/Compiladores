@@ -6,8 +6,12 @@ begin
     n := 0;
     while m > 0 do
     begin
+        while n < 5 do
+        begin
+            n := n + 1;
+        end;
         m := m-1;
+        n := m;
     end;
-    n := (m + 2) * 3;
 end.
 

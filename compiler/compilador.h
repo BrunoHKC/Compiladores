@@ -28,7 +28,7 @@ typedef enum simbolos {
   simb_or,simb_div,simb_and,simb_not,
   simb_atribuicao,simb_ponto_e_virgula,simb_dois_pontos,simb_virgula,simb_ponto,
   simb_abre_parenteses,simb_fecha_parenteses,
-  simb_integer,simb_boolean,
+  simb_integer,simb_boolean,simb_true,simb_false,simb_read,simb_write,
   simb_identificador,simb_numero
 } simbolos;
 

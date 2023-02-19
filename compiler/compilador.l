@@ -281,6 +281,30 @@ boolean { simbolo = simb_boolean;
               return BOOLEAN;
 }
 
+true        {   simbolo = simb_true;
+                strncpy(token, yytext, TAM_TOKEN);
+                IMPRIME(" true");
+                return TRUE;
+            }
+
+false       {   simbolo = simb_false;
+                strncpy(token, yytext, TAM_TOKEN);
+                IMPRIME(" false");
+                return FALSE;
+            }
+
+write       {   simbolo = simb_write;
+                strncpy(token, yytext, TAM_TOKEN);
+                IMPRIME("write ");
+                return WRITE;
+            }
+
+read        {   simbolo = simb_read;
+                strncpy(token, yytext, TAM_TOKEN);
+                IMPRIME("read ");
+                return READ;
+            }
+
 {ident} { simbolo = simb_identificador;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" ident  ");

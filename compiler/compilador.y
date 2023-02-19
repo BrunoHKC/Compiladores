@@ -38,6 +38,7 @@ int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
 int contador_rotulo = 0;
+int write = 0;
 
 
 //Pilha de deslocamentos
@@ -45,10 +46,6 @@ Stack* pilhaDeslocamentos;
 
 //Pilha de operacoes
 Stack* pilhaOperacoes;
-
-//Pilha nivel destino e deslocamento
-Stack* pilhaVarNivelDestino;
-Stack* pilhaVarDeslocamentos;
 
 //Pilha de rotulos
 Stack* pilhaRotulo;
@@ -58,6 +55,7 @@ TabelaSimbolos ts;
 
 //Itens
 Item* var = NULL;
+Item* varAtribuida = NULL;
 
 
 #define YYSTYPE char *
@@ -106,20 +104,6 @@ void empilhaOperacao(int operacao)
 	int* new_operacao = (int*)malloc(sizeof(int));
 	*new_operacao = operacao;
 	push(pilhaOperacoes,(void*)new_operacao);
-}
-
-void empilhaVarNivelDestino(int nd)
-{
-	int* new_nivel = (int*)malloc(sizeof(int));
-	*new_nivel = nd;
-	push(pilhaVarNivelDestino,(void*)new_nivel);
-}
-
-void empilhaVarDeslocamento(int desloc)
-{
-	int* new_desloc = (int*)malloc(sizeof(int));
-	*new_desloc = desloc;
-	push(pilhaVarDeslocamentos,(void*)new_desloc);
 }
 
 void geraOperacao() {
@@ -180,6 +164,7 @@ void geraOperacao() {
 %token ATRIBUICAO
 %token IGUAL DIFERENTE MAIOR MENOR MAIOR_IGUAL MENOR_IGUAL
 %token MAIS MENOS MULTIPLICACAO DIVISAO
+%token READ WRITE TRUE FALSE
 %token T_LABEL T_TYPE T_ARRAY T_OF
 %token T_PROCEDURE T_FUNCTION
 %token T_GOTO T_IF T_THEN T_ELSE
@@ -282,15 +267,17 @@ lista_idents: lista_idents VIRGULA IDENT
 ;
 
 //Regra 16: comando composto
-comando_composto_aux: comando_composto_aux comando  | ;
-comando_composto: T_BEGIN comando  comando_composto_aux T_END;
+comando_composto_aux: comando_composto_aux comando PONTO_E_VIRGULA | ;
+comando_composto: T_BEGIN comando PONTO_E_VIRGULA comando_composto_aux T_END;
 
 //Regra 17 e 18: comando (omitido comando sem rotulo)
-comando: 	atribuicao PONTO_E_VIRGULA
-			| comando_repetitivo PONTO_E_VIRGULA
-			| comando_condicional PONTO_E_VIRGULA
-//			| chamada_procedimento PONTO_E_VIRGULA
-//			| desvio PONTO_E_VIRGULA
+comando: 	atribuicao
+			| leitura
+			| escrita
+			| comando_repetitivo
+			| comando_condicional
+//			| chamada_procedimento
+//			| chamada_funcao
 ;
 
 //Regra 19:
@@ -300,22 +287,92 @@ atribuicao	:
 			}
 			variavel
 			{
-				empilhaVarNivelDestino(var->nivel);
-				empilhaVarDeslocamento(var->var.deslocamento);
+				varAtribuida = var;
 			}
 			ATRIBUICAO expressao
 			{
 				//TODO: Verifica se o tipo da expressao eh o mesmo da variavel
 				
-				int nivel_destino = *(int*)pop(pilhaVarNivelDestino);
-				int deslocamento = *(int*)pop(pilhaVarDeslocamentos);
-				char buff[5 + 10];
-				snprintf(buff,15,"ARMZ %d, %d",nivel_destino,deslocamento);
-				geraCodigo (NULL, buff);
+				if(varAtribuida->categoria == CAT_PARAM_FORMAL_SIMPLES)
+				{
+					if(varAtribuida->param.passagem == REFERENCIA)
+					{
+						//Se eh um parametro por referencia
+						char buff[5 + 10];
+						sprintf(buff, "ARMI %d, %d", varAtribuida->nivel, varAtribuida->param.deslocamento);
+                    	geraCodigo(NULL, buff);
+					}
+					else
+					{
+						//Se eh um parametro por valor
+						char buff[5 + 10];
+						sprintf(buff, "ARMZ %d, %d", varAtribuida->nivel, varAtribuida->param.deslocamento);
+                    	geraCodigo(NULL, buff);
+					}	
+				}
+				else
+				{
+					char buff[5 + 10];
+					sprintf(buff, "ARMZ %d, %d", varAtribuida->nivel, varAtribuida->var.deslocamento);
+					geraCodigo(NULL, buff);
+				}
 				printf("--Fim atribuicao--\n");
 			}
 			;
 
+
+leitura:
+            READ
+            ABRE_PARENTESES read_section FECHA_PARENTESES
+;
+
+read_section:
+            {
+                geraCodigo(NULL, "LEIT");
+            }
+            variavel
+            {
+				if(var->categoria == CAT_PARAM_FORMAL_SIMPLES)
+				{
+					if(var->param.passagem == REFERENCIA)
+					{
+						//Se eh um parametro por referencia
+						char buff[5 + 10];
+						sprintf(buff, "ARMI %d, %d", var->nivel, var->param.deslocamento);
+                    	geraCodigo(NULL, buff);
+					}
+					else
+					{
+						//Se eh um parametro por valor
+						char buff[5 + 10];
+						sprintf(buff, "ARMZ %d, %d", var->nivel, var->param.deslocamento);
+                    	geraCodigo(NULL, buff);
+					}	
+				}
+				else
+				{
+					char buff[5 + 10];
+					sprintf(buff, "ARMZ %d, %d", var->nivel, var->var.deslocamento);
+					geraCodigo(NULL, buff);
+				}
+            }
+            read_section_lp
+;
+
+read_section_lp:
+            | VIRGULA read_section
+;
+
+escrita:
+            WRITE
+            {
+                write = 1;
+            }
+            ABRE_PARENTESES expressao FECHA_PARENTESES
+            {
+                write = 0;
+            }
+;
 
 //Regra 22: comando condcional
 comando_condicional_else : | T_ELSE comando_composto;
@@ -420,9 +477,19 @@ comando_repetitivo	: T_WHILE
 expressao: 	
 
 			expressao_simples 
+			{
+                if (write) {
+                    geraCodigo(NULL, "IMPR");
+                }
+            }
 			| expressao_simples relacao expressao_simples 
 			{
 				geraOperacao();
+
+			    if (write) {
+                    geraCodigo(NULL, "IMPR");
+                }
+            
 			};
 
 //Regra 26: relacao
@@ -462,7 +529,6 @@ termo	: termo mult_div_and fator
 fator: 	variavel 
 		{ 
 			geraCRVL();
-			//geraOperacao(); 
 		}
 		| numero
 //		| chamada_funcao
@@ -482,7 +548,7 @@ variavel	:
 						//gera erro
 						char buff[100];
 	          			snprintf(buff,100,"Erro: Variavel '%s' nao foi declarada!\n",tokenAtual);
-						fprintf(stderr,"%s",buff);
+						yyerror(buff);
 						exit(1);
 					}
 
@@ -525,9 +591,6 @@ int main (int argc, char** argv) {
 	
 	pilhaDeslocamentos = initStack();
 	pilhaOperacoes = initStack();
-
-	pilhaVarDeslocamentos = initStack();
-	pilhaVarNivelDestino = initStack();
 
 	pilhaRotulo = initStack();
 

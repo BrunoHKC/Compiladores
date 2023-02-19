@@ -64,22 +64,26 @@
      MENOS = 280,
      MULTIPLICACAO = 281,
      DIVISAO = 282,
-     T_LABEL = 283,
-     T_TYPE = 284,
-     T_ARRAY = 285,
-     T_OF = 286,
-     T_PROCEDURE = 287,
-     T_FUNCTION = 288,
-     T_GOTO = 289,
-     T_IF = 290,
-     T_THEN = 291,
-     T_ELSE = 292,
-     T_WHILE = 293,
-     T_DO = 294,
-     T_OR = 295,
-     T_DIV = 296,
-     T_AND = 297,
-     T_NOT = 298
+     READ = 283,
+     WRITE = 284,
+     TRUE = 285,
+     FALSE = 286,
+     T_LABEL = 287,
+     T_TYPE = 288,
+     T_ARRAY = 289,
+     T_OF = 290,
+     T_PROCEDURE = 291,
+     T_FUNCTION = 292,
+     T_GOTO = 293,
+     T_IF = 294,
+     T_THEN = 295,
+     T_ELSE = 296,
+     T_WHILE = 297,
+     T_DO = 298,
+     T_OR = 299,
+     T_DIV = 300,
+     T_AND = 301,
+     T_NOT = 302
    };
 #endif
 /* Tokens.  */
@@ -108,22 +112,26 @@
 #define MENOS 280
 #define MULTIPLICACAO 281
 #define DIVISAO 282
-#define T_LABEL 283
-#define T_TYPE 284
-#define T_ARRAY 285
-#define T_OF 286
-#define T_PROCEDURE 287
-#define T_FUNCTION 288
-#define T_GOTO 289
-#define T_IF 290
-#define T_THEN 291
-#define T_ELSE 292
-#define T_WHILE 293
-#define T_DO 294
-#define T_OR 295
-#define T_DIV 296
-#define T_AND 297
-#define T_NOT 298
+#define READ 283
+#define WRITE 284
+#define TRUE 285
+#define FALSE 286
+#define T_LABEL 287
+#define T_TYPE 288
+#define T_ARRAY 289
+#define T_OF 290
+#define T_PROCEDURE 291
+#define T_FUNCTION 292
+#define T_GOTO 293
+#define T_IF 294
+#define T_THEN 295
+#define T_ELSE 296
+#define T_WHILE 297
+#define T_DO 298
+#define T_OR 299
+#define T_DIV 300
+#define T_AND 301
+#define T_NOT 302
 
 
 

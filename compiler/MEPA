@@ -2,31 +2,25 @@
      AMEM 3
      CRCT 3
      ARMZ 1, 0
-     CRCT 0
-     ARMZ 1, 1
-R00: NADA 
      CRVL 1, 0
      CRCT 0
      CMMA 
-     DSVF R01
-R02: NADA 
-     CRVL 1, 1
-     CRCT 5
+     DSVF R00
+     CRVL 1, 0
+     CRCT 3
      CMDG 
-     DSVF R03
-     CRVL 1, 1
+     DSVF R01
      CRCT 1
-     SOMA 
-     ARMZ 1, 1
-     DSVS R02
-R03: NADA 
-     CRVL 1, 0
-     CRCT 1
-     SUBT 
      ARMZ 1, 0
-     CRVL 1, 0
-     ARMZ 1, 1
-     DSVS R00
+     DSVS R02
 R01: NADA 
+     CRCT 2
+     ARMZ 1, 0
+R02: NADA 
+     DSVS R03
+R00: NADA 
+     CRCT 3
+     ARMZ 1, 0
+R03: NADA 
      DMEM 3
      PARA

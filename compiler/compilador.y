@@ -34,6 +34,7 @@ enum {
 //incializa variaveis globais
 int num_vars;
 int num_param = 0;
+int* contaParametro;
 int nivel_lexico = 0;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
@@ -44,6 +45,7 @@ int write = 0;
 
 int declarandoParametros = 0;
 int declarandoFuncao = 0;
+int chamando_subrotina = 0;
 
 
 //Pilha de deslocamentos
@@ -119,7 +121,6 @@ char* geraRotulo()
 
 void geraCarregaValor(Item* variavel)
 {
-	printf("_____Carrgeando valor da variavel %s q eh do tipo %d\n",variavel->identificador,variavel->categoria);
 	//se variavel simples
 	if(variavel->categoria == CAT_PARAM_FORMAL_SIMPLES)
 	{
@@ -130,14 +131,22 @@ void geraCarregaValor(Item* variavel)
 		}
 		else
 		{
-			//Se eh um parametro por valor
-			sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->param.deslocamento);
+			if(chamando_subrotina && proced->proc.parametros[*contaParametro].passagem)
+				//Se a variavel eh um argumento e eh passado por referencia
+				sprintf(buff, "CREN %d, %d", variavel->nivel, variavel->param.deslocamento);
+			else
+				//Se eh um parametro por valor
+				sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->param.deslocamento);
 		}	
 	}
 	else
 	{
 		if(variavel->categoria == CAT_VARIAVEL)
-			sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->var.deslocamento);
+			if(chamando_subrotina && proced->proc.parametros[*contaParametro].passagem)
+				//Se a variavel eh um argumento e eh passado por referencia
+				sprintf(buff, "CREN %d, %d", variavel->nivel, variavel->param.deslocamento);
+			else
+				sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->var.deslocamento);
 		else
 			sprintf(buff, "CRVL %d, %d", variavel->nivel,  - variavel->proc.n);
 	}
@@ -482,13 +491,15 @@ declara_procedimento:
             }
             parametros_formais PONTO_E_VIRGULA
             {
-                proced->proc.n = pilhaParametros->size;
+				proced->proc.n = pilhaParametros->size;
+				proced->proc.parametros = malloc(sizeof(ParametroFormal)*proced->proc.n);
                 insere(&ts, proced);
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
+					proced->proc.parametros[proced->proc.n - i] = tmp->param;
                 }
             }
             bloco_subrotina
@@ -522,13 +533,15 @@ declara_funcao:
             }
             parametros_formais DOIS_PONTOS {declarandoFuncao = 1;}tipo{declarandoFuncao = 0;} PONTO_E_VIRGULA
             {
-                proced->proc.n = pilhaParametros->size;
+				proced->proc.n = pilhaParametros->size;
+				proced->proc.parametros = malloc(sizeof(ParametroFormal)*proced->proc.n);
                 insere(&ts, proced);
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
+					proced->proc.parametros[proced->proc.n - i] = tmp->param;
                 }
             }
             bloco_subrotina
@@ -555,8 +568,8 @@ bloco_subrotina:
 ;
 
 
-lista_parametros: 	| expressao
-					| lista_parametros VIRGULA expressao;
+lista_parametros: 	| expressao { *contaParametro = *contaParametro + 1;}
+					| lista_parametros VIRGULA expressao { *contaParametro = *contaParametro + 1;} ;
 
 chamada_procedimento:
             {
@@ -581,12 +594,29 @@ chamada_procedimento:
 
 				//salva procedimento anterior
 				push(pilhaSubRotinas,proced);
+				//empilha contagem de parametros anterior
+				push(pilhaContaParametros,contaParametro);
+				//cria uma nova contagem do 0
+				contaParametro = malloc(sizeof(int));
+				*contaParametro = 0;
 				//empilha parametros
+				chamando_subrotina = 1;
+
             }
             ABRE_PARENTESES lista_parametros FECHA_PARENTESES
             {
+				chamando_subrotina = 0;
 				//recupera procedimento
 				proced = pop(pilhaSubRotinas);
+				//Verifica se a quantidade de parametros batem
+				if(*contaParametro != proced->proc.n)
+				{
+					sprintf(buff,"Erro: a funcao/procedimento %s utiliza %d parametros mas foi passado %d\n",proced->identificador,proced->proc.n,*contaParametro);
+					yyerror(buff);
+                    exit(1);
+				}
+				//recupera contador anterior
+				contaParametro = pop(pilhaContaParametros);
 				//gera codigo chama procedimento
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);
@@ -639,12 +669,28 @@ chamada_funcao:
 				
 				//salva procedimento anterior
 				push(pilhaSubRotinas,proced);
+				//empilha contagem de parametros anterior
+				push(pilhaContaParametros,contaParametro);
+				//cria uma nova contagem do 0
+				contaParametro = malloc(sizeof(int));
+				*contaParametro = 0;
 				//empilha parametros
+				chamando_subrotina = 1;
             }
             ABRE_PARENTESES lista_parametros FECHA_PARENTESES
             {
+				chamando_subrotina = 0;
 				//recupera procedimento
 				proced = pop(pilhaSubRotinas);
+				//Verifica se a quantidade de parametros batem
+				if(*contaParametro != proced->proc.n)
+				{
+					sprintf(buff,"Erro: a funcao/procedimento %s utiliza %d parametros mas foi passado %d\n",proced->identificador,proced->proc.n,*contaParametro);
+					yyerror(buff);
+                    exit(1);
+				}
+				//recupera contador anterior
+				contaParametro = pop(pilhaContaParametros);
 				//gera codigo chama procedimento
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);

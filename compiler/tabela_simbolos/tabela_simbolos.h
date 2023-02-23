@@ -39,7 +39,6 @@ typedef struct ParametroFormal
 	VarTipo tipo;
 	int deslocamento;
 	PassagemTipo passagem;
-	
 } ParametroFormal;
 
 
@@ -49,6 +48,7 @@ typedef struct Procedimento
 {
 	char rotulo[10];
 	int n;							// qtd de parametros
+	ParametroFormal* parametros;
 	VarTipo tipo;
 } Procedimento;
 

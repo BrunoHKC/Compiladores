@@ -10,7 +10,8 @@ typedef enum CategoriaSimbolo
 {
     CAT_VARIAVEL,
     CAT_PARAM_FORMAL_SIMPLES,
-    CAT_PROCEDIM
+    CAT_PROCEDIM,
+	CAT_FUNCAO,
 } CategoriaSimbolo;
 
 //-----------------Tipos das variaveis-----------------//

@@ -57,6 +57,7 @@ Stack* pilhaRotulo;
 //Pilha das sub-rotinas
 Stack* pilhaSubRotinas;
 Stack* pilhaParametros;
+Stack* pilhaContaParametros;
 
 
 //Tabela de simbolos
@@ -117,7 +118,10 @@ void geraCarregaValor(Item* variavel)
 	}
 	else
 	{
-		sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->var.deslocamento);
+		if(variavel->categoria == CAT_VARIAVEL)
+			sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->var.deslocamento);
+		else
+			sprintf(buff, "CRVL %d, %d", variavel->nivel,  - variavel->proc.n);
 	}
 
 	geraCodigo(NULL,buff);
@@ -140,7 +144,10 @@ void geraArmazenaValor(Item* variavel)
 	}
 	else
 	{
-		sprintf(buff, "ARMZ %d, %d", variavel->nivel, variavel->var.deslocamento);
+		if(variavel->categoria == CAT_VARIAVEL)
+			sprintf(buff, "ARMZ %d, %d", variavel->nivel, variavel->var.deslocamento);
+		else
+			sprintf(buff, "ARMZ %d, %d", variavel->nivel, -variavel->proc.n);
 	}
 	geraCodigo(NULL, buff);
 }
@@ -468,62 +475,8 @@ declara_procedimento:
             bloco_subrotina
 ;
 
-bloco_subrotina: 
-            {
-				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
-				push(pilhaSubRotinas,proced);
-            } 
-            bloco
-			{
-				//gera codigo retorna procedmento
-				proced = pop(pilhaSubRotinas);
-				proced = busca(&ts,proced->identificador);
-				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
-				geraCodigo(NULL, buff);
 
-				//retira parametros da tabela de simbolos
-				elimina(&ts,proced->proc.n);
-
-				proced = NULL;
-			}
-;
-
-
-lista_parametros: 	| expressao
-					| lista_parametros VIRGULA expressao;
-
-chamada_procedimento:
-            {
-				printf("--Chamada procedimento com parametros--\n");
-                if (!var) {
-                    yyerror("Procedimento nao declarado.");
-                    exit(1);
-                }
-                proced = var;
-            }
-            ABRE_PARENTESES lista_parametros
-            {
-                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
-                geraCodigo(NULL, buff);
-                proced = NULL;
-            }
-            FECHA_PARENTESES
-            |
-            {
-				printf("--Chamada procedimento sem parenteses--\n");
-                if (!var) {
-                    yyerror("Procedimento nao declarado.");
-                    exit(1);
-                }
-                proced = var;
-
-                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
-                geraCodigo(NULL, buff);
-                proced = NULL;
-            }
-;
-
-/*
+//Regra 13: declara_procedimento
 declara_funcao: 
             T_FUNCTION identificador
             {
@@ -587,7 +540,68 @@ declara_funcao:
             bloco
 ;
 
+bloco_subrotina: 
+            {
+				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
+				push(pilhaSubRotinas,proced);
+            } 
+            bloco
+			{
+				//gera codigo retorna procedmento
+				proced = pop(pilhaSubRotinas);
+				proced = busca(&ts,proced->identificador);
+				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
+				geraCodigo(NULL, buff);
 
+				//retira parametros da tabela de simbolos
+				elimina(&ts,proced->proc.n);
+
+				proced = NULL;
+			}
+;
+
+
+lista_parametros: 	| expressao
+					| lista_parametros VIRGULA expressao;
+
+chamada_procedimento:
+            {
+				printf("--Chamada procedimento com parametros--\n");
+                if (!var) {
+                    yyerror("Procedimento nao declarado.");
+                    exit(1);
+                }
+				//salva procedimento anterior
+                proced = var;
+				push(pilhaSubRotinas,proced);
+            }
+            ABRE_PARENTESES lista_parametros FECHA_PARENTESES
+            {
+				//recupera procedimento
+				proced = pop(pilhaSubRotinas);
+				//gera codigo chama procedimento
+                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
+                geraCodigo(NULL, buff);
+                proced = NULL;
+            }
+            |
+            {
+				printf("--Chamada procedimento sem parenteses--\n");
+                if (!var) {
+                    yyerror("Procedimento nao declarado.");
+                    exit(1);
+                }
+                proced = var;
+
+                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
+                geraCodigo(NULL, buff);
+                proced = NULL;
+            }
+;
+
+
+
+/*
 chamada_funcao:
             identificador
             {
@@ -706,30 +720,7 @@ atribuicao	:
 			ATRIBUICAO expressao
 			{
 				//TODO: Verifica se o tipo da expressao eh o mesmo da variavel
-				
-				if(varAtribuida->categoria == CAT_PARAM_FORMAL_SIMPLES)
-				{
-					if(varAtribuida->param.passagem == REFERENCIA)
-					{
-						//Se eh um parametro por referencia
-						char buff[5 + 10];
-						sprintf(buff, "ARMI %d, %d", varAtribuida->nivel, varAtribuida->param.deslocamento);
-                    	geraCodigo(NULL, buff);
-					}
-					else
-					{
-						//Se eh um parametro por valor
-						char buff[5 + 10];
-						sprintf(buff, "ARMZ %d, %d", varAtribuida->nivel, varAtribuida->param.deslocamento);
-                    	geraCodigo(NULL, buff);
-					}	
-				}
-				else
-				{
-					char buff[5 + 10];
-					sprintf(buff, "ARMZ %d, %d", varAtribuida->nivel, varAtribuida->var.deslocamento);
-					geraCodigo(NULL, buff);
-				}
+				geraArmazenaValor(varAtribuida);
 				printf("--Fim atribuicao--\n");
 			}
 			;
@@ -989,6 +980,7 @@ int main (int argc, char** argv) {
 
 	pilhaSubRotinas = initStack();
 	pilhaParametros = initStack();
+	pilhaContaParametros = initStack();
 
    yyin=fp;
    yyparse();

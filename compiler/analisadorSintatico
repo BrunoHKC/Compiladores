@@ -1,5 +1,5 @@
 program     # program 
- ident      # exemplo75 
+ ident      # proc2 
  abre_parenteses      # ( 
  ident      # input 
 [ASynt]	INSERE VAR SIMPLES input nl= 0, desloc = 0
@@ -9,46 +9,122 @@ program     # program
  fecha_parenteses     # ) 
  pt_virgula      # ; 
 var      # var 
- ident      # m 
-[ASynt]	INSERE VAR SIMPLES m nl= 0, desloc = 0
+ ident      # x 
+[ASynt]	INSERE VAR SIMPLES x nl= 0, desloc = 0
  virgula      # , 
- ident      # n 
-[ASynt]	INSERE VAR SIMPLES n nl= 0, desloc = 1
+ ident      # y 
+[ASynt]	INSERE VAR SIMPLES y nl= 0, desloc = 1
  dois pontos     # : 
 integer     # integer 
-Encontrou um tipo e esta declarando parametros 0
  pt_virgula      # ; 
- ident      # c 
-[ASynt]	INSERE VAR SIMPLES c nl= 0, desloc = 2
+procedure      # procedure 
+--Inicio declara procedimento--
+ ident      # p 
+Buscando item p na tabela de simbolos
+Item nao encontrado
+ abre_parenteses      # ( 
+Inicio parametrosformais
+ ident      # t 
+Parametros formais valor
  dois pontos     # : 
-boolean     # boolean 
-Encontrou um tipo e esta declarando parametros 0
+integer     # integer 
+qtd 1, size 1
+ fecha_parenteses     # ) 
+Atualiando deslocamentos
+fim parametros formais 0 
+ pt_virgula      # ; 
+---Empilha Procedimento p nl 1 n 1
+var      # var 
+ ident      # z 
+[ASynt]	INSERE VAR SIMPLES z nl= 1, desloc = 0
+ dois pontos     # : 
+integer     # integer 
  pt_virgula      # ; 
 begin     # begin 
- ident      # m 
-Buscando item m na tabela de simbolos
- atribuicao      # := 
---Inicia atribuicao--
- numero      # 0 
- pt_virgula      # ; 
---Fim atribuicao--
- ident      # n 
-Buscando item n na tabela de simbolos
- atribuicao      # := 
---Inicia atribuicao--
+if      # if 
+--Inicio If--
  abre_parenteses      # ( 
- ident      # n 
-Buscando item n na tabela de simbolos
- mais     # + 
- numero      # 2 
+ ident      # t 
+Buscando item t na tabela de simbolos
+ maior     # > 
+ numero      # 1 
  fecha_parenteses     # ) 
- multiplicacao     # * 
- numero      # 3 
+then      # then 
+begin     # begin 
+ ident      # p 
+Buscando item p na tabela de simbolos
+ abre_parenteses      # ( 
+--Chamada procedimento com parametros--
+ ident      # t 
+Buscando item t na tabela de simbolos
+ menos     # - 
+ numero      # 1 
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+end      # end 
+else      # else 
+begin     # begin 
+ ident      # y 
+Buscando item y na tabela de simbolos
+ atribuicao      # := 
+--Inicia atribuicao--
+ numero      # 1 
  pt_virgula      # ; 
 --Fim atribuicao--
 end      # end 
-Eliminando 3 itens
----Destruindo item c
----Destruindo item n
----Destruindo item m
+ pt_virgula      # ; 
+ ident      # z 
+Buscando item z na tabela de simbolos
+ atribuicao      # := 
+--Inicia atribuicao--
+ ident      # y 
+Buscando item y na tabela de simbolos
+ pt_virgula      # ; 
+--Fim atribuicao--
+ ident      # y 
+Buscando item y na tabela de simbolos
+ atribuicao      # := 
+--Inicia atribuicao--
+ ident      # z 
+Buscando item z na tabela de simbolos
+ multiplicacao     # * 
+ ident      # t 
+Buscando item t na tabela de simbolos
+ pt_virgula      # ; 
+--Fim atribuicao--
+end      # end 
+Eliminando 1 itens
+---Destruindo item z
+Buscando item p na tabela de simbolos
+Eliminando 1 itens
+---Destruindo item t
+ pt_virgula      # ; 
+begin     # begin 
+read     # read 
+ abre_parenteses      # ( 
+ ident      # x 
+Buscando item x na tabela de simbolos
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+ ident      # p 
+Buscando item p na tabela de simbolos
+ abre_parenteses      # ( 
+--Chamada procedimento com parametros--
+ ident      # x 
+Buscando item x na tabela de simbolos
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+write     # write 
+ abre_parenteses      # ( 
+ ident      # x 
+Buscando item x na tabela de simbolos
+ virgula      # , 
+ ident      # y 
+Buscando item y na tabela de simbolos
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+end      # end 
+Eliminando 2 itens
+---Destruindo item p
+---Destruindo item y
  ponto      # . 

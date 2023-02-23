@@ -49,6 +49,7 @@ typedef struct Procedimento
 {
 	char rotulo[10];
 	int n;							// qtd de parametros
+	VarTipo tipo;
 } Procedimento;
 
 

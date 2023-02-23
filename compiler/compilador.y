@@ -43,6 +43,7 @@ int contador_rotulo = 0;
 int write = 0;
 
 int declarandoParametros = 0;
+int declarandoFuncao = 0;
 
 
 //Pilha de deslocamentos
@@ -71,6 +72,22 @@ Item* varAtribuida = NULL;
 
 
 #define YYSTYPE char *
+
+Item* geraFuncao(char* identificador, int nivel)
+{
+	//Cria item
+	Item* new_item = (Item*)malloc(sizeof(Item));
+	
+	//Aloca espaco para o identificador
+	new_item->identificador = (char*)malloc(100*sizeof(char));
+
+	//Preenche campos
+	strcpy(new_item->identificador,identificador);
+	new_item->categoria = CAT_FUNCAO;
+	new_item->nivel = nivel;
+
+	return new_item;
+}
 
 Item* geraProcedimento(char* identificador, int nivel)
 {
@@ -102,6 +119,7 @@ char* geraRotulo()
 
 void geraCarregaValor(Item* variavel)
 {
+	printf("_____Carrgeando valor da variavel %s q eh do tipo %d\n",variavel->identificador,variavel->categoria);
 	//se variavel simples
 	if(variavel->categoria == CAT_PARAM_FORMAL_SIMPLES)
 	{
@@ -147,7 +165,7 @@ void geraArmazenaValor(Item* variavel)
 		if(variavel->categoria == CAT_VARIAVEL)
 			sprintf(buff, "ARMZ %d, %d", variavel->nivel, variavel->var.deslocamento);
 		else
-			sprintf(buff, "ARMZ %d, %d", variavel->nivel, -variavel->proc.n);
+			sprintf(buff, "ARMZ %d, %d", variavel->nivel, -4 -variavel->proc.n);
 	}
 	geraCodigo(NULL, buff);
 }
@@ -330,13 +348,13 @@ bloco       : {
 			  }
               parte_declara_vars
               { 	/* AMEM */ 
-          			snprintf(buff,15,"AMEM %d",desloc);
+          			sprintf(buff,"AMEM %d",desloc);
           			geraCodigo (NULL, buff);
 
 					if(nivel_lexico == 0)
 					{					
 						char* rotulo_pula_subrotinas = geraRotulo();
-						snprintf(buff,15,"DSVS %s",rotulo_pula_subrotinas);
+						sprintf(buff,"DSVS %s",rotulo_pula_subrotinas);
 						geraCodigo (NULL, buff);
 
 						push(pilhaRotulo,rotulo_pula_subrotinas);
@@ -364,8 +382,7 @@ bloco       : {
               		elimina(&ts, desloc);
               	
               		//Libera memoria
-					char buff[5 + 10];
-          			snprintf(buff,15,"DMEM %d",desloc);
+          			sprintf(buff,"DMEM %d",desloc);
           			geraCodigo (NULL, buff);
 
 					
@@ -378,16 +395,18 @@ bloco       : {
 //Regra 6: tipo
 tipo        : INTEGER 
 			{ 
-				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
-				if(!declarandoParametros)
+				if(declarandoFuncao)
+					proced->proc.tipo = TYPE_INT;
+				else if(!declarandoParametros)
 					atualizaTipos(&ts, num_vars, TYPE_INT); 
 				else
 					atualizaTiposParametros(pilhaParametros,num_param,TYPE_INT);
 			}
 			| BOOLEAN 
 			{ 
-				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
-				if(!declarandoParametros)
+				if(declarandoFuncao)
+					proced->proc.tipo = TYPE_BOOL;
+				else if(!declarandoParametros)
 					atualizaTipos(&ts, num_vars, TYPE_BOOL);
 				else
 					atualizaTiposParametros(pilhaParametros,num_param,TYPE_BOOL);
@@ -433,7 +452,7 @@ lista_idents: lista_idents VIRGULA IDENT
 //Regra 11: parte declaracoes de sub-rotinas 	
 parte_declara_subrotinas:
 				            |declara_procedimento PONTO_E_VIRGULA parte_declara_subrotinas
-//			            	| declara_funcao PONTO_E_VIRGULA parte_declara_subrotinas
+			            	| declara_funcao PONTO_E_VIRGULA parte_declara_subrotinas
 ;
 
 //Regra 12: declaracao de procedimento
@@ -456,7 +475,7 @@ declara_procedimento:
                 }
 				else
 				{
-					snprintf(buff,100,"Erro: o procedimento '%s' ja foi declarado!\n",token);
+					sprintf(buff,"Erro: o procedimento '%s' ja foi declarado!\n",token);
 					yyerror(buff);
 					exit(1);
 				}
@@ -478,66 +497,41 @@ declara_procedimento:
 
 //Regra 13: declara_procedimento
 declara_funcao: 
-            T_FUNCTION identificador
             {
-                temporary = find(symbols_table, yytext);
+				printf("--Inicio declara funcao--\n");
+			}
+            T_FUNCTION IDENT
+            {
+                Item* procedimento = busca(&ts, token);
 
-                if (!temporary) {
-                    funct = newFunction(0, yytext, nvl_lex);
-                    geraRotulo(str_tmp);
-                    strcpy(funct->item.func.label, str_tmp);
+                if (!procedimento) {
+                    proced = geraFuncao(token, nivel_lexico);
+                    
+                    char* label = geraRotulo();
+					strcpy(proced->proc.rotulo,label);
 
-                    geraRotulo(str_tmp);
-                    strcpy(funct->item.func.label_f, str_tmp);
-
-                    sprintf(str_tmp,"ENPR %d", nvl_lex);
-                    geraCodigo(funct->item.func.label, str_tmp);
-                } else {
-                    funct = temporary;
-                    geraCodigo(funct->item.func.label_f, "NADA");
+                    sprintf(buff, "ENPR %d", nivel_lexico);
+                    geraCodigo(proced->proc.rotulo, buff);
                 }
+				else
+				{
+					sprintf(buff,"Erro: o procedimento '%s' ja foi declarado!\n",token);
+					yyerror(buff);
+					exit(1);
+				}
             }
-            parametros_formais 
+            parametros_formais DOIS_PONTOS {declarandoFuncao = 1;}tipo{declarandoFuncao = 0;} PONTO_E_VIRGULA
             {
-                funct->item.func.num_param = parameters->size;
-                offset = - 4;
-                i_index = parameters->size - 1;
-                funct->item.func.parameters = (variable*)malloc(sizeof(variable)*parameters->size);
-                push(symbols_table, funct);
+                proced->proc.n = pilhaParametros->size;
+                insere(&ts, proced);
                 
-                while (parameters->size) {
-                    temporary = pop(parameters);
-                    temporary->item.simple.offset = offset;
-                    push(symbols_table, newVariable(0, temporary->name, nvl_lex, offset, temporary->item.simple.parameter));
-                    offset--;
-                    funct->item.func.parameters[i_index] = temporary->item.simple;
-                    i_index--;
+				for(int i = 0; i < proced->proc.n; i++)
+				{
+                    Item* tmp = (Item*)pop(pilhaParametros);
+					insere(&ts, tmp);
                 }
-                parameters->size = 0;
-                offset = 0;
             }
-            DOIS_PONTOS tipo
-            {
-                int j;
-                if (!strcmp(yytext, "boolean")) {
-                    for (j = symbols_table->size - 1; j >= 0; j--) {
-                        if (symbols_table->head[j].category == FUNCTION_TP) {
-                            symbols_table->head[j].item.func.offset = - 4 - symbols_table->head[j].item.func.num_param;
-                            symbols_table->head[j].item.func.type = 8;
-                            break;
-                        }
-                    }
-                } else {
-                    for (j = symbols_table->size - 1; j >= 0; j--) {
-                        if (symbols_table->head[j].category == FUNCTION_TP) {
-                            symbols_table->head[j].item.func.offset = - 4 - symbols_table->head[j].item.func.num_param;
-                            symbols_table->head[j].item.func.type = 7;
-                            break;
-                        }
-                    }
-                }
-            } PONTO_E_VIRGULA 
-            bloco
+            bloco_subrotina
 ;
 
 bloco_subrotina: 
@@ -568,12 +562,26 @@ chamada_procedimento:
             {
 				printf("--Chamada procedimento com parametros--\n");
                 if (!var) {
-                    yyerror("Procedimento nao declarado.");
+                    yyerror("Erro: Procedimento/funcao nao declarado.");
                     exit(1);
                 }
-				//salva procedimento anterior
+				if(var->categoria != CAT_PROCEDIM && var->categoria != CAT_FUNCAO)
+				{
+					sprintf(buff,"Erro: o token %s nao faz referencia a uma funcao nem a um procedimento\n",var->identificador);
+					yyerror(buff);
+                    exit(1);
+				}
+
                 proced = var;
+				//se eh um procedimento, aloca espaco para valor de retorno
+				if(proced->categoria == CAT_FUNCAO)
+				{
+					geraCodigo(NULL, "AMEM 1");
+				}
+
+				//salva procedimento anterior
 				push(pilhaSubRotinas,proced);
+				//empilha parametros
             }
             ABRE_PARENTESES lista_parametros FECHA_PARENTESES
             {
@@ -588,10 +596,21 @@ chamada_procedimento:
             {
 				printf("--Chamada procedimento sem parenteses--\n");
                 if (!var) {
-                    yyerror("Procedimento nao declarado.");
+                    yyerror("Erro: Procedimento nao declarado.");
                     exit(1);
                 }
+				if(var->categoria != CAT_PROCEDIM && var->categoria != CAT_FUNCAO)
+				{
+					sprintf(buff,"Erro: o token %s nao faz referencia a uma funcao nem a um procedimento\n",token);
+					yyerror(buff);
+                    exit(1);
+				}
                 proced = var;
+				//se eh um procedimento, aloca espaco para valor de retorno
+				if(proced->categoria == CAT_FUNCAO)
+				{
+					geraCodigo(NULL, "AMEM 1");
+				}
 
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);
@@ -599,32 +618,39 @@ chamada_procedimento:
             }
 ;
 
-
-
-/*
 chamada_funcao:
-            identificador
-            {
-                call_flag = 1;
-                if (!temporary) {
-                    yyerror("funcao nao declarada.");
+				{
+				printf("--Chamada funcao com parametros--\n");
+                if (!var) {
+                    yyerror("Erro: funcao nao declarada.");
                     exit(1);
                 }
-                geraCodigo(NULL, "AMEM 1");
-                funct = temporary;
-                parameters->size = 0;
-                count_param = 0;
+
+				printf("categoria do token %s eh %d\n",var->identificador,var->categoria);
+				if(var->categoria != CAT_FUNCAO)
+				{
+					sprintf(buff,"Erro: o token %s nao faz referencia a uma funcao\n",var->identificador);
+					yyerror(buff);
+                    exit(1);
+				}
+
+                proced = var;
+				geraCodigo(NULL, "AMEM 1");
+				
+				//salva procedimento anterior
+				push(pilhaSubRotinas,proced);
+				//empilha parametros
             }
-            ABRE_PARENTESES lista_expressoes
-            { 	
-                sprintf(str_tmp, "CHPR %s, %d", funct->item.func.label, nvl_lex);
-                geraCodigo(NULL, str_tmp);
-                funct = NULL;
-                call_flag = 0;
+            ABRE_PARENTESES lista_parametros FECHA_PARENTESES
+            {
+				//recupera procedimento
+				proced = pop(pilhaSubRotinas);
+				//gera codigo chama procedimento
+                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
+                geraCodigo(NULL, buff);
+                proced = NULL;
             }
-            FECHA_PARENTESES
-;
-*/
+			;
 
 //Regra 14: parametros formais
 parametros_formais:
@@ -701,7 +727,6 @@ comando: 	atribuicao_ou_chama_procedimento
 			| escrita
 			| comando_repetitivo
 			| comando_condicional
-//			| chamada_funcao
 ;
 
 atribuicao_ou_chama_procedimento:
@@ -710,6 +735,31 @@ atribuicao_ou_chama_procedimento:
 atribuicao_ou_chama_procedimento_aux:
 	atribuicao
 	| chamada_procedimento;
+
+
+variavel_ou_chamada_funcao:
+	IDENT
+	{
+		var = busca(&ts,token);
+	}
+	variavel_ou_chamada_funcao_aux;
+
+variavel_ou_chamada_funcao_aux:
+	chamada_funcao
+	| 
+	{
+		if(var == NULL)
+		{
+			//gera erro
+			sprintf(buff,"Erro: variavel '%s' nao foi declarada!\n",token);
+			yyerror(buff);
+			exit(1);
+		}
+		//carrega valor variavel
+		geraCarregaValor(var);
+	}
+	;
+
 
 //Regra 19:
 atribuicao	: 
@@ -768,8 +818,7 @@ comando_condicional	:
 						char* rotulo_entrada_else = geraRotulo();
 						
 						//desvia se falso
-						char buff[5 + 10];
-						snprintf(buff,15,"DSVF %s",rotulo_entrada_else);
+						sprintf(buff,"DSVF %s",rotulo_entrada_else);
 						geraCodigo (NULL, buff);
 
 						//empilha rotulo entrada do else
@@ -782,8 +831,7 @@ comando_condicional	:
 						char* rotulo_saida_else = geraRotulo();
 						
 						//desvia sempre
-						char buff[5 + 10];
-						snprintf(buff,15,"DSVS %s",rotulo_saida_else);
+						sprintf(buff,"DSVS %s",rotulo_saida_else);
 						geraCodigo (NULL, buff);
 				
 						//recupera rotulo entrada do else
@@ -829,8 +877,7 @@ comando_repetitivo	: T_WHILE
 						char* rotulo_entrada = pop(pilhaRotulo);
 
 						//desvia se falso
-						char buff[5 + 10];
-						snprintf(buff,15,"DSVF %s",rotulo_saida);
+						sprintf(buff,"DSVF %s",rotulo_saida);
 						geraCodigo (NULL, buff);
 
 						//empilha rotulos
@@ -844,8 +891,7 @@ comando_repetitivo	: T_WHILE
 						char* rotulo_saida = pop(pilhaRotulo);
 						char* rotulo_entrada = pop(pilhaRotulo);
 						//desvia sempre
-						char buff[5 + 10];
-						snprintf(buff,15,"DSVS %s",rotulo_entrada);
+						sprintf(buff,"DSVS %s",rotulo_entrada);
 						geraCodigo (NULL, buff);
 
 						//Insere rotulo saida no codgo MEPA
@@ -897,10 +943,7 @@ termo	: termo mult_div_and fator
 
 
 //Regra 29: fator
-fator: 	variavel 
-		{ 
-			geraCarregaValor(var);
-		}
+fator: 	variavel_ou_chamada_funcao
 		| numero
 		| TRUE 
 		{
@@ -914,7 +957,6 @@ fator: 	variavel
 			sprintf(buff, "CRCT 0");
 			geraCodigo(NULL, buff);
 		}
-//		| chamada_funcao
 		| ABRE_PARENTESES expressao FECHA_PARENTESES
 		| T_NOT fator
 		{
@@ -928,7 +970,7 @@ variavel	: 	identificador
 					if(var == NULL)
 					{
 						//gera erro
-	          			snprintf(buff,100,"Erro: variavel '%s' nao foi declarada!\n",token);
+	          			sprintf(buff,"Erro: variavel '%s' nao foi declarada!\n",token);
 						yyerror(buff);
 						exit(1);
 					}
@@ -939,9 +981,8 @@ numero: NUMERO {
 
 			//TODO: verifica se erro semantico
 
-			char buff[5 + 10];
 			strcpy(tokenAtual,token);
-			snprintf(buff,15,"CRCT %s",tokenAtual);
+			sprintf(buff,"CRCT %s",tokenAtual);
 			geraCodigo (NULL, buff);
 			};
 

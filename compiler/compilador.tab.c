@@ -798,17 +798,17 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   303,   303,   303,   315,   325,   342,   315,   373,   381,
-     393,   394,   395,   396,   401,   401,   409,   417,   428,   429,
-     435,   439,   459,   435,   477,   477,   493,   493,   494,   497,
-     506,   497,   513,   617,   619,   621,   619,   631,   632,   636,
-     642,   650,   656,   665,   665,   671,   670,   682,   682,   683,
-     686,   687,   688,   689,   690,   695,   698,   699,   703,   703,
-     741,   741,   740,   748,   747,   749,   754,   758,   762,   770,
-     770,   772,   776,   790,   772,   820,   836,   819,   870,   871,
-     877,   878,   879,   880,   881,   882,   885,   886,   887,   888,
-     889,   890,   891,   895,   899,   900,   901,   902,   906,   910,
-     914,   915,   921,   928,   929,   936,   948,   958
+       0,   303,   303,   303,   315,   325,   342,   315,   372,   380,
+     392,   393,   394,   395,   400,   400,   408,   416,   427,   428,
+     434,   438,   458,   434,   472,   472,   492,   492,   493,   496,
+     505,   496,   512,   616,   618,   620,   618,   630,   631,   635,
+     641,   649,   655,   664,   664,   670,   669,   681,   681,   682,
+     685,   686,   687,   688,   689,   694,   697,   698,   702,   702,
+     740,   740,   739,   747,   746,   748,   753,   757,   761,   769,
+     769,   771,   775,   789,   771,   819,   835,   818,   869,   870,
+     876,   877,   878,   879,   880,   881,   884,   885,   886,   887,
+     888,   889,   890,   894,   898,   899,   900,   901,   905,   909,
+     913,   914,   920,   927,   928,   935,   947,   957
 };
 #endif
 
@@ -1896,7 +1896,6 @@ yyreduce:
   case 7:
 #line 355 "compilador.y"
     {
-
               		//Remove simbolos
               		elimina(&ts, desloc);
               	
@@ -1912,7 +1911,7 @@ yyreduce:
     break;
 
   case 8:
-#line 374 "compilador.y"
+#line 373 "compilador.y"
     { 
 				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
 				if(!declarandoParametros)
@@ -1923,7 +1922,7 @@ yyreduce:
     break;
 
   case 9:
-#line 382 "compilador.y"
+#line 381 "compilador.y"
     { 
 				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
 				if(!declarandoParametros)
@@ -1934,14 +1933,14 @@ yyreduce:
     break;
 
   case 14:
-#line 401 "compilador.y"
+#line 400 "compilador.y"
     { 	/* zera contador */
 					num_vars = 0; 
 			   	;}
     break;
 
   case 16:
-#line 410 "compilador.y"
+#line 409 "compilador.y"
     { /* insere ultima vars na tabela de simbolos */
               	printf("[ASynt]\tINSERE VAR SIMPLES %s nl= %d, desloc = %d\n",token,nivel_lexico,desloc);
               	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
@@ -1952,7 +1951,7 @@ yyreduce:
     break;
 
   case 17:
-#line 417 "compilador.y"
+#line 416 "compilador.y"
     { /* insere vars na tabela de simbolos */
             	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
             	printf("[ASynt]\tINSERE VAR SIMPLES %s nl= %d, desloc = %d\n",token,nivel_lexico,desloc);
@@ -1963,14 +1962,14 @@ yyreduce:
     break;
 
   case 20:
-#line 435 "compilador.y"
+#line 434 "compilador.y"
     {
 				printf("--Inicio declara procedimento--\n");
 			;}
     break;
 
   case 21:
-#line 439 "compilador.y"
+#line 438 "compilador.y"
     {
                 Item* procedimento = busca(&ts, token);
 
@@ -1993,25 +1992,21 @@ yyreduce:
     break;
 
   case 22:
-#line 459 "compilador.y"
+#line 458 "compilador.y"
     {
                 proced->proc.n = pilhaParametros->size;
                 insere(&ts, proced);
-				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
-				printf("Este procedimento possui %d parametros\n",proced->proc.n);
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
-					printf("Inseriu o parametro %s na tabela de simbolos com deslocamento %d e nl %d\n",tmp->identificador,tmp->param.deslocamento,tmp->nivel);
-                    //proced->proc.parametros[i] = tmp;
                 }
             ;}
     break;
 
   case 24:
-#line 477 "compilador.y"
+#line 472 "compilador.y"
     {
 				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				push(pilhaSubRotinas,proced);
@@ -2019,19 +2014,23 @@ yyreduce:
     break;
 
   case 25:
-#line 482 "compilador.y"
+#line 477 "compilador.y"
     {
+				//gera codigo retorna procedmento
 				proced = pop(pilhaSubRotinas);
 				proced = busca(&ts,proced->identificador);
-				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
 				geraCodigo(NULL, buff);
+
+				//retira parametros da tabela de simbolos
+				elimina(&ts,proced->proc.n);
+
 				proced = NULL;
 			;}
     break;
 
   case 29:
-#line 497 "compilador.y"
+#line 496 "compilador.y"
     {
 				printf("--Chamada procedimento com parametros--\n");
                 if (!var) {
@@ -2043,7 +2042,7 @@ yyreduce:
     break;
 
   case 30:
-#line 506 "compilador.y"
+#line 505 "compilador.y"
     {
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);
@@ -2052,7 +2051,7 @@ yyreduce:
     break;
 
   case 32:
-#line 513 "compilador.y"
+#line 512 "compilador.y"
     {
 				printf("--Chamada procedimento sem parenteses--\n");
                 if (!var) {
@@ -2068,19 +2067,19 @@ yyreduce:
     break;
 
   case 34:
-#line 619 "compilador.y"
+#line 618 "compilador.y"
     { 
 				printf("Inicio parametrosformais\n");
 				declarandoParametros = 1; ;}
     break;
 
   case 35:
-#line 621 "compilador.y"
+#line 620 "compilador.y"
     { emptyStack(pilhaParametros); ;}
     break;
 
   case 36:
-#line 623 "compilador.y"
+#line 622 "compilador.y"
     {
 				//corrige deslocamentos
 				atualizaDeslocamentoParametros(pilhaParametros);
@@ -2090,7 +2089,7 @@ yyreduce:
     break;
 
   case 39:
-#line 637 "compilador.y"
+#line 636 "compilador.y"
     {
 							num_param++;
 							Item* parametroValor = criaParametro(token,nivel_lexico,PARAMETRO);
@@ -2099,7 +2098,7 @@ yyreduce:
     break;
 
   case 40:
-#line 643 "compilador.y"
+#line 642 "compilador.y"
     {
 							num_param++;
 							Item* parametroValor = criaParametro(token,nivel_lexico,PARAMETRO);
@@ -2108,7 +2107,7 @@ yyreduce:
     break;
 
   case 41:
-#line 651 "compilador.y"
+#line 650 "compilador.y"
     {
 							num_param++;
 							Item* parametroReferencia = criaParametro(token,nivel_lexico,REFERENCIA);
@@ -2117,7 +2116,7 @@ yyreduce:
     break;
 
   case 42:
-#line 657 "compilador.y"
+#line 656 "compilador.y"
     {
 							num_param++;
 							Item* parametroReferencia = criaParametro(token,nivel_lexico,REFERENCIA);
@@ -2126,7 +2125,7 @@ yyreduce:
     break;
 
   case 43:
-#line 665 "compilador.y"
+#line 664 "compilador.y"
     {
 				num_param = 0;
 				printf("Parametros formais valor\n");
@@ -2134,7 +2133,7 @@ yyreduce:
     break;
 
   case 45:
-#line 671 "compilador.y"
+#line 670 "compilador.y"
     {
 				num_param = 0;
 				printf("Parametros formais referencia\n");
@@ -2142,7 +2141,7 @@ yyreduce:
     break;
 
   case 58:
-#line 703 "compilador.y"
+#line 702 "compilador.y"
     {
 				printf("--Inicia atribuicao--\n");
 				varAtribuida = var;
@@ -2150,7 +2149,7 @@ yyreduce:
     break;
 
   case 59:
-#line 708 "compilador.y"
+#line 707 "compilador.y"
     {
 				//TODO: Verifica se o tipo da expressao eh o mesmo da variavel
 				
@@ -2182,48 +2181,48 @@ yyreduce:
     break;
 
   case 60:
-#line 741 "compilador.y"
+#line 740 "compilador.y"
     {geraCodigo(NULL, "LEIT");;}
     break;
 
   case 61:
-#line 741 "compilador.y"
+#line 740 "compilador.y"
     { geraArmazenaValor(var);;}
     break;
 
   case 63:
-#line 748 "compilador.y"
+#line 747 "compilador.y"
     {geraCodigo(NULL, "LEIT");;}
     break;
 
   case 64:
-#line 748 "compilador.y"
+#line 747 "compilador.y"
     {geraArmazenaValor(var);;}
     break;
 
   case 67:
-#line 759 "compilador.y"
+#line 758 "compilador.y"
     {
 						geraCodigo(NULL, "IMPR");
 					;}
     break;
 
   case 68:
-#line 763 "compilador.y"
+#line 762 "compilador.y"
     {
 						geraCodigo(NULL, "IMPR");
 					;}
     break;
 
   case 71:
-#line 772 "compilador.y"
+#line 771 "compilador.y"
     {
 						printf("--Inicio If--\n");
 					;}
     break;
 
   case 72:
-#line 776 "compilador.y"
+#line 775 "compilador.y"
     {
 						//Cria rotulo saida e empilha
 						char* rotulo_entrada_else = geraRotulo();
@@ -2240,7 +2239,7 @@ yyreduce:
     break;
 
   case 73:
-#line 790 "compilador.y"
+#line 789 "compilador.y"
     {
 						//Cria rotulo saida e empilha
 						char* rotulo_saida_else = geraRotulo();
@@ -2262,7 +2261,7 @@ yyreduce:
     break;
 
   case 74:
-#line 808 "compilador.y"
+#line 807 "compilador.y"
     {
 						//recupera rotulo saida do else
 						char* rotulo_saida_else = pop(pilhaRotulo);
@@ -2273,7 +2272,7 @@ yyreduce:
     break;
 
   case 75:
-#line 820 "compilador.y"
+#line 819 "compilador.y"
     {
 						printf("--Inicio while--\n");
 						//Cria rotulo entrada e empilha
@@ -2292,7 +2291,7 @@ yyreduce:
     break;
 
   case 76:
-#line 836 "compilador.y"
+#line 835 "compilador.y"
     {
 						//recupera rotulos
 						char* rotulo_saida = pop(pilhaRotulo);
@@ -2311,7 +2310,7 @@ yyreduce:
     break;
 
   case 77:
-#line 852 "compilador.y"
+#line 851 "compilador.y"
     {
 						//recupera rotulos
 						char* rotulo_saida = pop(pilhaRotulo);
@@ -2329,115 +2328,115 @@ yyreduce:
     break;
 
   case 79:
-#line 872 "compilador.y"
+#line 871 "compilador.y"
     {
 				geraOperacao();            
 			;}
     break;
 
   case 80:
-#line 877 "compilador.y"
+#line 876 "compilador.y"
     {empilhaOperacao(OP_IGUAL);;}
     break;
 
   case 81:
-#line 878 "compilador.y"
+#line 877 "compilador.y"
     {empilhaOperacao(OP_DIFERENTE);;}
     break;
 
   case 82:
-#line 879 "compilador.y"
+#line 878 "compilador.y"
     {empilhaOperacao(OP_DIFERENTE);;}
     break;
 
   case 83:
-#line 880 "compilador.y"
+#line 879 "compilador.y"
     {empilhaOperacao(MENOR_IGUAL);;}
     break;
 
   case 84:
-#line 881 "compilador.y"
+#line 880 "compilador.y"
     {empilhaOperacao(MAIOR_IGUAL);;}
     break;
 
   case 85:
-#line 882 "compilador.y"
+#line 881 "compilador.y"
     {empilhaOperacao(OP_MAIOR);;}
     break;
 
   case 86:
-#line 885 "compilador.y"
+#line 884 "compilador.y"
     {sinal = 0;;}
     break;
 
   case 87:
-#line 886 "compilador.y"
+#line 885 "compilador.y"
     {sinal = 1;;}
     break;
 
   case 88:
-#line 887 "compilador.y"
+#line 886 "compilador.y"
     {sinal = 0;;}
     break;
 
   case 89:
-#line 888 "compilador.y"
+#line 887 "compilador.y"
     {empilhaOperacao(OP_SOMA);;}
     break;
 
   case 90:
-#line 889 "compilador.y"
+#line 888 "compilador.y"
     {empilhaOperacao(OP_SUBTRACAO);;}
     break;
 
   case 91:
-#line 890 "compilador.y"
+#line 889 "compilador.y"
     {empilhaOperacao(OP_OR);;}
     break;
 
   case 92:
-#line 892 "compilador.y"
+#line 891 "compilador.y"
     {
 						geraOperacao();
 					;}
     break;
 
   case 93:
-#line 895 "compilador.y"
+#line 894 "compilador.y"
     {if (sinal) geraCodigo(NULL, "INVR \0");;}
     break;
 
   case 94:
-#line 899 "compilador.y"
+#line 898 "compilador.y"
     {empilhaOperacao(OP_MULTIPLICACAO);;}
     break;
 
   case 95:
-#line 900 "compilador.y"
+#line 899 "compilador.y"
     {empilhaOperacao(OP_DIVISAO_INTEIRA);;}
     break;
 
   case 96:
-#line 901 "compilador.y"
+#line 900 "compilador.y"
     {empilhaOperacao(OP_AND);;}
     break;
 
   case 97:
-#line 903 "compilador.y"
+#line 902 "compilador.y"
     {
 			geraOperacao();
 		;}
     break;
 
   case 99:
-#line 911 "compilador.y"
+#line 910 "compilador.y"
     { 
 			geraCarregaValor(var);
 		;}
     break;
 
   case 101:
-#line 916 "compilador.y"
+#line 915 "compilador.y"
     {
 			char buff[5 + 10];
 			sprintf(buff, "CRCT 1");
@@ -2446,7 +2445,7 @@ yyreduce:
     break;
 
   case 102:
-#line 922 "compilador.y"
+#line 921 "compilador.y"
     {
 			char buff[5 + 10];
 			sprintf(buff, "CRCT 0");
@@ -2455,14 +2454,14 @@ yyreduce:
     break;
 
   case 104:
-#line 930 "compilador.y"
+#line 929 "compilador.y"
     {
 			geraCodigo(NULL, "NEGA");
 		;}
     break;
 
   case 105:
-#line 937 "compilador.y"
+#line 936 "compilador.y"
     {
 					if(var == NULL)
 					{
@@ -2475,7 +2474,7 @@ yyreduce:
     break;
 
   case 106:
-#line 948 "compilador.y"
+#line 947 "compilador.y"
     {
 
 			//TODO: verifica se erro semantico
@@ -2488,7 +2487,7 @@ yyreduce:
     break;
 
   case 107:
-#line 959 "compilador.y"
+#line 958 "compilador.y"
     { 
 					var = busca(&ts,token);
 				;}
@@ -2496,7 +2495,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 2500 "compilador.tab.c"
+#line 2499 "compilador.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2710,7 +2709,7 @@ yyreturn:
 }
 
 
-#line 963 "compilador.y"
+#line 962 "compilador.y"
 
 
 int main (int argc, char** argv) {

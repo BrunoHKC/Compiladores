@@ -353,7 +353,6 @@ bloco       : {
 
               comando_composto
               {
-
               		//Remove simbolos
               		elimina(&ts, desloc);
               	
@@ -459,15 +458,11 @@ declara_procedimento:
             {
                 proced->proc.n = pilhaParametros->size;
                 insere(&ts, proced);
-				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
-				printf("Este procedimento possui %d parametros\n",proced->proc.n);
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
-					printf("Inseriu o parametro %s na tabela de simbolos com deslocamento %d e nl %d\n",tmp->identificador,tmp->param.deslocamento,tmp->nivel);
-                    //proced->proc.parametros[i] = tmp;
                 }
             }
             bloco_subrotina
@@ -480,11 +475,15 @@ bloco_subrotina:
             } 
             bloco
 			{
+				//gera codigo retorna procedmento
 				proced = pop(pilhaSubRotinas);
 				proced = busca(&ts,proced->identificador);
-				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
 				geraCodigo(NULL, buff);
+
+				//retira parametros da tabela de simbolos
+				elimina(&ts,proced->proc.n);
+
 				proced = NULL;
 			}
 ;

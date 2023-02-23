@@ -2,23 +2,23 @@ program     # program
  ident      # exemplo75 
  abre_parenteses      # ( 
  ident      # input 
-[ASynt]	INSERE VAR SIMPLES  input
+[ASynt]	INSERE VAR SIMPLES input nl= 0, desloc = 0
  virgula      # , 
  ident      # output 
-[ASynt]	INSERE VAR SIMPLES  output
+[ASynt]	INSERE VAR SIMPLES output nl= 0, desloc = 1
  fecha_parenteses     # ) 
  pt_virgula      # ; 
 var      # var 
  ident      # m 
-[ASynt]	INSERE VAR SIMPLES  m
+[ASynt]	INSERE VAR SIMPLES m nl= 0, desloc = 0
  virgula      # , 
  ident      # n 
-[ASynt]	INSERE VAR SIMPLES  n
+[ASynt]	INSERE VAR SIMPLES n nl= 0, desloc = 1
  dois pontos     # : 
 integer     # integer 
  pt_virgula      # ; 
  ident      # c 
-[ASynt]	INSERE VAR SIMPLES  c
+[ASynt]	INSERE VAR SIMPLES c nl= 0, desloc = 2
  dois pontos     # : 
 boolean     # boolean 
  pt_virgula      # ; 
@@ -45,4 +45,5 @@ Buscando item n na tabela de simbolos
  pt_virgula      # ; 
 --Fim atribuicao--
 end      # end 
+Eliminando 3 itens
  ponto      # . 

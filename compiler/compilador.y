@@ -33,7 +33,7 @@ enum {
 
 //incializa variaveis globais
 int num_vars;
-int nivel_lexico = -1;
+int nivel_lexico = 0;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
@@ -214,8 +214,6 @@ programa    :{
 
 //Regra 2: bloco
 bloco       : { 
-					nivel_lexico++;
-
 					//Salva deslocamento anterior
 					int* new_desloc = (int*)malloc(sizeof(int));
 					*new_desloc = desloc;
@@ -237,10 +235,15 @@ bloco       : {
 
 						push(pilhaRotulo,rotulo_pula_subrotinas);
 					}
+
+					nivel_lexico++;
   			  }
 
 			  parte_declara_subrotinas
 			  {
+					//Atualiza nivel lexico
+          			nivel_lexico--;
+
 					if(nivel_lexico == 0)
 					{
 						char* rotulo_pula_subrotinas = pop(pilhaRotulo);
@@ -259,10 +262,8 @@ bloco       : {
 					char buff[5 + 10];
           			snprintf(buff,15,"DMEM %d",desloc);
           			geraCodigo (NULL, buff);
+
 					
-					//Atualiza nivel lexico
-          			nivel_lexico--;
-          		
           			//Recupera deslocamento anterior
           			desloc = *(int*)pop(pilhaDeslocamentos);
               }
@@ -326,12 +327,12 @@ declara_procedimento:
                 Item* procedimento = busca(&ts, token);
 
                 if (!procedimento) {
-                    proced = geraProcedimento(token, nivel_lexico+1);
+                    proced = geraProcedimento(token, nivel_lexico);
                     
                     char* label = geraRotulo();
 					strcpy(proced->proc.rotulo,label);
 
-                    sprintf(buff, "ENPR %d", nivel_lexico+1);
+                    sprintf(buff, "ENPR %d", nivel_lexico);
                     geraCodigo(proced->proc.rotulo, buff);
                 }
 				else

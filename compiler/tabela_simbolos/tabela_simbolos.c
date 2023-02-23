@@ -100,25 +100,9 @@ void destroiItem(Item* item)
 			free(item);
 			break;
 		case CAT_PARAM_FORMAL_SIMPLES :
-			p = item->param.next;
-			
-			if(p != NULL)
-			{
-				aux = p;
-				p = p->next;
-				free(aux);
-			}
-			free(item);
+			//destruido junto do procedimento
 			break;
 		case CAT_PROCEDIM:
-			p = item->proc.parametros;
-			
-			if(p != NULL)
-			{
-				aux = p;
-				p = p->next;
-				free(aux);
-			}
 			free(item);
 			break;
 		default:

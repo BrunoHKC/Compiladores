@@ -23,49 +23,26 @@ integer     # integer
 boolean     # boolean 
  pt_virgula      # ; 
 begin     # begin 
-Resetou tipo expressao 0
  ident      # m 
 Buscando item m na tabela de simbolos
  atribuicao      # := 
+--Inicia atribuicao--
  numero      # 0 
  pt_virgula      # ; 
-Stack = -1027594304
-topo = -1027593248
-Entrou
-Stack = -1027594320
-topo = -1027593216
-Entrou
+--Fim atribuicao--
  ident      # n 
-Resetou tipo expressao 0
 Buscando item n na tabela de simbolos
  atribuicao      # := 
+--Inicia atribuicao--
  abre_parenteses      # ( 
  ident      # n 
 Buscando item n na tabela de simbolos
  mais     # + 
-Empilhando operacao
-Atribuiu tipo
  numero      # 2 
  fecha_parenteses     # ) 
-Stack = -1027594336
-topo = -1027593152
-Entrou
  multiplicacao     # * 
-Empilhando operacao
-Atribuiu tipo
  numero      # 3 
-Stack = -1027594336
-topo = -1027593136
-Entrou
  pt_virgula      # ; 
-Stack = -1027594304
-topo = -1027593248
-Entrou
-Stack = -1027594320
-topo = -1027593184
-Entrou
+--Fim atribuicao--
 end      # end 
-Stack = -1027594352
-topo = -1027593808
-Entrou
  ponto      # . 

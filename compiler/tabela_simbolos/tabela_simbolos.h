@@ -38,16 +38,15 @@ typedef struct ParametroFormal
 	VarTipo tipo;
 	int deslocamento;
 	PassagemTipo passagem;
-	struct ParametroFormal* next;
 	
 } ParametroFormal;
 
 
 typedef struct Procedimento
 {
-	char* rotulo;
-	int n;
-	ParametroFormal* parametros; //		???
+	char rotulo[10];
+	int n;							// qtd de parametros
+	ParametroFormal* parametros; 	// vetor com os parametros
 	
 } Procedimento;
 

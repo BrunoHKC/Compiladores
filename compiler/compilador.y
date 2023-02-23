@@ -33,6 +33,7 @@ enum {
 
 //incializa variaveis globais
 int num_vars;
+int num_param = 0;
 int nivel_lexico = 0;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
@@ -40,7 +41,8 @@ char tokenAtual[100];
 char buff[100];	//buffer
 int contador_rotulo = 0;
 int write = 0;
-int count_param = 0;
+
+int declarandoParametros = 0;
 
 
 //Pilha de deslocamentos
@@ -221,6 +223,61 @@ void geraOperacao() {
 	}
 }
 
+Item* criaParametro(char* identificador,int nl,PassagemTipo tipoPassagem)
+{
+	Item* novoParametro = (Item*)malloc(sizeof(Item));
+	novoParametro->identificador = (char*)malloc(100*sizeof(char));
+
+	//Preenche campos
+	strcpy(novoParametro->identificador,identificador);
+	novoParametro->categoria = CAT_PARAM_FORMAL_SIMPLES;
+	novoParametro->nivel = nl;
+	novoParametro->param.passagem = tipoPassagem;
+
+	return novoParametro;
+}
+
+void atualizaDeslocamentoParametros(Stack* pilha)
+{
+	printf("Atualiando deslocamentos\n");
+	Stack* aux = initStack();
+	int size = pilha->size;
+	while(pilha->size > 0)
+	{
+		//retra os parametros atualizando o deslocamento
+		Item* parametro = pop(pilha);
+		parametro->param.deslocamento = -4 - ((size - pilha->size) - 1);
+		push(aux,parametro);
+	}
+	while(aux->size > 0)
+	{
+		//devolve para a pilha original
+		push(pilha,pop(aux));
+	}
+	return;
+}
+
+
+void atualizaTiposParametros(Stack* pilha,int qtd,VarTipo tipo)
+{
+	Stack* aux = initStack();
+	while(qtd > 0)
+	{
+		printf("qtd %d, size %d\n",qtd,pilha->size);
+		//retra os parametros atualizando o tipo
+		qtd--;
+		Item* parametro = pop(pilha);
+		parametro->param.tipo = tipo;
+		push(aux,parametro);
+	}
+	while(aux->size > 0)
+	{
+		//devolve para a pilha original
+		push(pilha,pop(aux));
+	}
+	return;
+}
+
 
 %}
 
@@ -313,8 +370,22 @@ bloco       : {
 
 
 //Regra 6: tipo
-tipo        : INTEGER { atualizaTipos(&ts, num_vars, TYPE_INT); }
-			| BOOLEAN { atualizaTipos(&ts, num_vars, TYPE_BOOL); }
+tipo        : INTEGER 
+			{ 
+				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
+				if(!declarandoParametros)
+					atualizaTipos(&ts, num_vars, TYPE_INT); 
+				else
+					atualizaTiposParametros(pilhaParametros,num_param,TYPE_INT);
+			}
+			| BOOLEAN 
+			{ 
+				printf("Encontrou um tipo e esta declarando parametros %d\n",declarandoParametros);
+				if(!declarandoParametros)
+					atualizaTipos(&ts, num_vars, TYPE_BOOL);
+				else
+					atualizaTiposParametros(pilhaParametros,num_param,TYPE_BOOL);
+			}
 ;
 
 
@@ -387,25 +458,18 @@ declara_procedimento:
             parametros_formais PONTO_E_VIRGULA
             {
                 proced->proc.n = pilhaParametros->size;
-                int offset = - 4;
-                proced->proc.parametros = (ParametroFormal*)malloc(sizeof(ParametroFormal)*proced->proc.n);
+                //proced->proc.parametros = (ParametroFormal**)malloc(sizeof(ParametroFormal*)*proced->proc.n);
                 insere(&ts, proced);
-				printf("Inseriu procedimento na tabela de simbolos\n");
+				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
+				printf("Este procedimento possui %d parametros\n",proced->proc.n);
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
-
-                    tmp->param.deslocamento = offset;
-                    //insere(&ts, ItemVarSimples(tokenAtual,nivel_lexico,offset);
-					
-					//newVariable(0, temporary->name, nivel_lexico, offset, temporary->item.simple.parameter));
-                    offset++;
-                    //proced->proc.parametros[i] = (*tmp);
-                    
+					insere(&ts, tmp);
+					printf("Inseriu o parametro %s na tabela de simbolos com deslocamento %d e nl %d\n",tmp->identificador,tmp->param.deslocamento,tmp->nivel);
+                    //proced->proc.parametros[i] = tmp;
                 }
-
-
             }
             bloco_subrotina
 ;
@@ -413,15 +477,21 @@ declara_procedimento:
 bloco_subrotina: 
             {
 				push(pilhaSubRotinas,proced);
+				printf("-----empilou o procedimento %s de %d parametros\n",proced->identificador,proced->proc.n);
             } 
             bloco
 			{
-				proced = pop(pilhaSubRotinas);
-				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
+				Item* aux = pop(pilhaSubRotinas);
+				printf("-----Esta lidando com o procedimento %s de %d parametros e nivel %d\n",aux->identificador,aux->proc.n,aux->nivel);
+				sprintf(buff, "RTPR %d, %d", aux->nivel, aux->proc.n);	
 				geraCodigo(NULL, buff);
 				proced = NULL;
 			}
 ;
+
+
+lista_parametros: 	| expressao
+					| lista_parametros VIRGULA expressao;
 
 chamada_procedimento:
             {
@@ -432,29 +502,14 @@ chamada_procedimento:
                 }
                 proced = var;
 				proced->proc.n = 0;
-                count_param = 0;
             }
-            ABRE_PARENTESES lista_expressoes
+            ABRE_PARENTESES lista_parametros
             {
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);
                 proced = NULL;
             }
             FECHA_PARENTESES
-			| ABRE_PARENTESES FECHA_PARENTESES
-			{
-				printf("--Chamada procedimento sem parametro com parenteses--\n");
-                if (!var) {
-                    yyerror("Procedimento nao declarado.");
-                    exit(1);
-                }
-                proced = var;
-                proced->proc.n = 0;
-
-                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
-                geraCodigo(NULL, buff);
-                proced = NULL;
-            }
             |
             {
 				printf("--Chamada procedimento sem parenteses--\n");
@@ -562,7 +617,17 @@ chamada_funcao:
 
 //Regra 14: parametros formais
 parametros_formais:
-            | ABRE_PARENTESES secao_parametros_formais parametros_formais_aux FECHA_PARENTESES
+            | 
+			{ 
+				printf("Inicio parametrosformais\n");
+				declarandoParametros = 1; } ABRE_PARENTESES { emptyStack(pilhaParametros); }
+			secao_parametros_formais parametros_formais_aux FECHA_PARENTESES
+			{
+				//corrige deslocamentos
+				atualizaDeslocamentoParametros(pilhaParametros);
+				declarandoParametros = 0;
+				printf("fim parametros formais %d \n",declarandoParametros);
+			}
 ;
 
 parametros_formais_aux:
@@ -570,32 +635,46 @@ parametros_formais_aux:
 ;
 
 //Regra 15: secao_parametros_formais
+lista_parametros_valor: lista_parametros_valor VIRGULA IDENT
+						{
+							num_param++;
+							Item* parametroValor = criaParametro(token,nivel_lexico,PARAMETRO);
+							push(pilhaParametros,parametroValor);
+						}
+						| IDENT
+						{
+							num_param++;
+							Item* parametroValor = criaParametro(token,nivel_lexico,PARAMETRO);
+							push(pilhaParametros,parametroValor);
+						};
+
+lista_parametros_referencia:
+						lista_parametros_referencia VIRGULA IDENT
+						{
+							num_param++;
+							Item* parametroReferencia = criaParametro(token,nivel_lexico,REFERENCIA);
+							push(pilhaParametros,parametroReferencia);
+						}
+						| IDENT
+						{
+							num_param++;
+							Item* parametroReferencia = criaParametro(token,nivel_lexico,REFERENCIA);
+							push(pilhaParametros,parametroReferencia);
+						}
+						;
+
 secao_parametros_formais: 
-            lista_idents
-            {
-				/*
-                for (i_index = 0; i_index < aux->size; i_index++) {
-                    temporary = &(aux->head[i_index]);
-                    temporary->item.simple.parameter = VALUE_TP;
-                    push(parameters, temporary);
-                }
-                aux->size = 0;
-				*/
-            }
-            DOIS_PONTOS tipo
-            | VAR lista_idents
-            {
-				/*
-                for (i_index = 0; i_index < aux->size; i_index++) {
-                    temporary = &(aux->head[i_index]);
-                    temporary->item.simple.parameter = REFERENCE_TP;
-                    temporary->nvl_lex = nvl_lex;
-                    push(parameters, temporary);
-                }
-                aux->size = 0;
-				*/
-            }
-            DOIS_PONTOS tipo
+			{
+				num_param = 0;
+				printf("Parametros formais valor\n");
+			}
+			lista_parametros_valor DOIS_PONTOS tipo 
+            | VAR 
+			{
+				num_param = 0;
+				printf("Parametros formais referencia\n");
+			}
+			lista_parametros_referencia DOIS_PONTOS tipo
 ;
 
 
@@ -787,21 +866,6 @@ comando_repetitivo	: T_WHILE
 
 					};
 
-//Regra 24: lista expressoes
-lista_expressoes	:
-					lista_expressoes VIRGULA expressao
-					{
-						if (write) {
-							geraCodigo(NULL, "IMPR");
-						}
-					}
-					| expressao
-					{
-						if (write) {
-							geraCodigo(NULL, "IMPR");
-						}
-					}
-					;
 
 //Regra 25: expressao
 expressao: 	

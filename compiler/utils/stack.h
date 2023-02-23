@@ -22,6 +22,7 @@ typedef struct Stack
 
 
 Stack* initStack();
+void emptyStack(Stack* s);
 void destroyStack(Stack* s);
 void push(Stack* s,void* content);
 void* pop(Stack* s);

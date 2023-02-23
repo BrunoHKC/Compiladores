@@ -23,6 +23,17 @@ void destroyStack(Stack* s)
 	free(s);
 }
 
+void emptyStack(Stack* s)
+{
+	if(s != NULL)
+	{
+		//Empty stack
+		while(s->size != 0)
+			pop(s);
+	}
+
+}
+
 
 void push(Stack* s,void* content)
 {

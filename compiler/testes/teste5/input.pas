@@ -18,5 +18,5 @@ program proc1 (input, output);
     begin
         read(x);
         p;
-        write (x);
+        write (x,y);
 end.

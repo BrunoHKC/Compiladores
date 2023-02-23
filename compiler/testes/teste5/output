@@ -30,5 +30,8 @@ R00: NADA
      ARMZ 0, 0
      CHPR R01, 0
      CRVL 0, 0
+     IMPR
+     CRVL 0, 1
+     IMPR
      DMEM 2
      PARA

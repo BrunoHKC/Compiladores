@@ -96,11 +96,53 @@ char* geraRotulo()
 	return rotulo;
 }
 
-void geraCRVL() {
-	char buff[5 + 10];
-	snprintf(buff,15,"CRVL %d, %d",var->nivel, var->var.deslocamento);
-    geraCodigo(NULL, buff);
+
+void geraCarregaValor(Item* variavel)
+{
+	//se variavel simples
+	if(variavel->categoria == CAT_PARAM_FORMAL_SIMPLES)
+	{
+		if(variavel->param.passagem == REFERENCIA)
+		{
+			//Se eh um parametro por referencia
+			sprintf(buff, "CRVI %d, %d", variavel->nivel, variavel->param.deslocamento);
+		}
+		else
+		{
+			//Se eh um parametro por valor
+			sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->param.deslocamento);
+		}	
+	}
+	else
+	{
+		sprintf(buff, "CRVL %d, %d", variavel->nivel, variavel->var.deslocamento);
+	}
+
+	geraCodigo(NULL,buff);
 }
+
+void geraArmazenaValor(Item* variavel)
+{
+	if(variavel->categoria == CAT_PARAM_FORMAL_SIMPLES)
+	{
+		if(variavel->param.passagem == REFERENCIA)
+		{
+			//Se eh um parametro por referencia
+			sprintf(buff, "ARMI %d, %d", variavel->nivel, variavel->param.deslocamento);
+		}
+		else
+		{
+			//Se eh um parametro por valor
+			sprintf(buff, "ARMZ %d, %d", variavel->nivel, variavel->param.deslocamento);
+		}	
+	}
+	else
+	{
+		sprintf(buff, "ARMZ %d, %d", variavel->nivel, variavel->var.deslocamento);
+	}
+	geraCodigo(NULL, buff);
+}
+
 
 void empilhaOperacao(int operacao)
 {	
@@ -618,57 +660,34 @@ atribuicao	:
 
 
 leitura:
-            READ
-            ABRE_PARENTESES read_section FECHA_PARENTESES
+            READ ABRE_PARENTESES 
+			{geraCodigo(NULL, "LEIT");} variavel { geraArmazenaValor(var);}
+			parametros_letura FECHA_PARENTESES
 ;
 
-read_section:
-            {
-                geraCodigo(NULL, "LEIT");
-            }
-            variavel
-            {
-				if(var->categoria == CAT_PARAM_FORMAL_SIMPLES)
-				{
-					if(var->param.passagem == REFERENCIA)
-					{
-						//Se eh um parametro por referencia
-						char buff[5 + 10];
-						sprintf(buff, "ARMI %d, %d", var->nivel, var->param.deslocamento);
-                    	geraCodigo(NULL, buff);
-					}
-					else
-					{
-						//Se eh um parametro por valor
-						char buff[5 + 10];
-						sprintf(buff, "ARMZ %d, %d", var->nivel, var->param.deslocamento);
-                    	geraCodigo(NULL, buff);
-					}	
-				}
-				else
-				{
-					char buff[5 + 10];
-					sprintf(buff, "ARMZ %d, %d", var->nivel, var->var.deslocamento);
-					geraCodigo(NULL, buff);
-				}
-            }
-            read_section_lp
+
+parametros_letura:
+					VIRGULA 
+					{geraCodigo(NULL, "LEIT");} variavel {geraArmazenaValor(var);}
+					|
 ;
 
-read_section_lp:
-            | VIRGULA read_section
-;
 
 escrita:
-            WRITE
-            {
-                write = 1;
-            }
-            ABRE_PARENTESES expressao FECHA_PARENTESES
-            {
-                write = 0;
-            }
+            WRITE ABRE_PARENTESES parametros_write FECHA_PARENTESES
 ;
+
+parametros_write:
+					parametros_write VIRGULA expressao
+					{
+						geraCodigo(NULL, "IMPR");
+					}
+					| expressao
+					{
+						geraCodigo(NULL, "IMPR");
+					}
+;
+
 
 //Regra 22: comando condcional
 comando_condicional_else : | T_ELSE comando_composto;
@@ -828,30 +847,7 @@ termo	: termo mult_div_and fator
 //Regra 29: fator
 fator: 	variavel 
 		{ 
-			if(var->categoria == CAT_PARAM_FORMAL_SIMPLES)
-			{
-				if(var->param.passagem == REFERENCIA)
-				{
-					//Se eh um parametro por referencia
-					char buff[5 + 10];
-					sprintf(buff, "CRVI %d, %d", var->nivel, var->param.deslocamento);
-					geraCodigo(NULL, buff);
-				}
-				else
-				{
-					//Se eh um parametro por valor ou variavel simples
-					char buff[5 + 10];
-					sprintf(buff, "CRVL %d, %d", var->nivel, var->param.deslocamento);
-					geraCodigo(NULL, buff);
-				}
-			}
-			else
-			{
-				//Se eh um parametro por valor ou variavel simples
-				char buff[5 + 10];
-				sprintf(buff, "CRVL %d, %d", var->nivel, var->param.deslocamento);
-				geraCodigo(NULL, buff);
-			}
+			geraCarregaValor(var);
 		}
 		| numero
 		| TRUE 

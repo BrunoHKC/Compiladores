@@ -457,12 +457,12 @@ declara_procedimento:
             }
             parametros_formais PONTO_E_VIRGULA
             {
-                proced->n = pilhaParametros->size;
+                proced->proc.n = pilhaParametros->size;
                 insere(&ts, proced);
 				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
-				printf("Este procedimento possui %d parametros\n",proced->n);
+				printf("Este procedimento possui %d parametros\n",proced->proc.n);
                 
-				for(int i = 0; i < proced->n; i++)
+				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
@@ -475,15 +475,15 @@ declara_procedimento:
 
 bloco_subrotina: 
             {
-				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
+				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				push(pilhaSubRotinas,proced);
             } 
             bloco
 			{
 				proced = pop(pilhaSubRotinas);
 				proced = busca(&ts,proced->identificador);
-				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
-				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->n);	
+				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
+				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
 				geraCodigo(NULL, buff);
 				proced = NULL;
 			}

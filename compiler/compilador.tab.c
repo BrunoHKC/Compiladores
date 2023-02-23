@@ -1995,12 +1995,12 @@ yyreduce:
   case 22:
 #line 459 "compilador.y"
     {
-                proced->n = pilhaParametros->size;
+                proced->proc.n = pilhaParametros->size;
                 insere(&ts, proced);
 				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
-				printf("Este procedimento possui %d parametros\n",proced->n);
+				printf("Este procedimento possui %d parametros\n",proced->proc.n);
                 
-				for(int i = 0; i < proced->n; i++)
+				for(int i = 0; i < proced->proc.n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
@@ -2013,7 +2013,7 @@ yyreduce:
   case 24:
 #line 477 "compilador.y"
     {
-				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
+				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				push(pilhaSubRotinas,proced);
             ;}
     break;
@@ -2023,8 +2023,8 @@ yyreduce:
     {
 				proced = pop(pilhaSubRotinas);
 				proced = busca(&ts,proced->identificador);
-				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
-				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->n);	
+				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
+				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->proc.n);	
 				geraCodigo(NULL, buff);
 				proced = NULL;
 			;}

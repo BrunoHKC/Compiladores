@@ -47,9 +47,7 @@ struct Item;
 typedef struct Procedimento
 {
 	char rotulo[10];
-	int n;							// qtd de parametros
-	//struct Item** parametros; 	// vetor com os parametros
-	
+	//int n;							// qtd de parametros
 } Procedimento;
 
 
@@ -59,6 +57,7 @@ typedef struct Item
 	char* identificador;
 	CategoriaSimbolo categoria;
 	int nivel;
+	int n;//qtd parametros
 	union {
 		VariavelSimples var;
 		ParametroFormal param;

@@ -34,6 +34,16 @@ Item* busca(TabelaSimbolos* ts,char* identificador)
 	elem = ts->ultimo;
 	for(int i = 0; i < ts->tamanho;i++)
 	{
+		if(elem->categoria == CAT_PROCEDIM)
+		{
+			printf("##proc %s nl %d n %d\n",elem->identificador,elem->nivel,elem->n);
+		}
+		elem = elem->prev;
+	}
+
+	elem = ts->ultimo;
+	for(int i = 0; i < ts->tamanho;i++)
+	{
 		if(!strcmp(identificador,elem->identificador))
 		{
 			encontrou = 1;
@@ -93,6 +103,8 @@ void destroiItem(Item* item)
 {
 	if(item == NULL)
 		return;
+
+	printf("---Destruindo item %s\n",item->identificador);
 		
 	ParametroFormal* aux;
 	ParametroFormal* p;

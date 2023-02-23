@@ -457,13 +457,12 @@ declara_procedimento:
             }
             parametros_formais PONTO_E_VIRGULA
             {
-                proced->proc.n = pilhaParametros->size;
-                //proced->proc.parametros = (ParametroFormal**)malloc(sizeof(ParametroFormal*)*proced->proc.n);
+                proced->n = pilhaParametros->size;
                 insere(&ts, proced);
 				printf("Inseriu procedimento %s na tabela de simbolos\n",proced->identificador);
-				printf("Este procedimento possui %d parametros\n",proced->proc.n);
+				printf("Este procedimento possui %d parametros\n",proced->n);
                 
-				for(int i = 0; i < proced->proc.n; i++)
+				for(int i = 0; i < proced->n; i++)
 				{
                     Item* tmp = (Item*)pop(pilhaParametros);
 					insere(&ts, tmp);
@@ -476,14 +475,15 @@ declara_procedimento:
 
 bloco_subrotina: 
             {
+				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
 				push(pilhaSubRotinas,proced);
-				printf("-----empilou o procedimento %s de %d parametros\n",proced->identificador,proced->proc.n);
             } 
             bloco
 			{
-				Item* aux = pop(pilhaSubRotinas);
-				printf("-----Esta lidando com o procedimento %s de %d parametros e nivel %d\n",aux->identificador,aux->proc.n,aux->nivel);
-				sprintf(buff, "RTPR %d, %d", aux->nivel, aux->proc.n);	
+				proced = pop(pilhaSubRotinas);
+				proced = busca(&ts,proced->identificador);
+				printf("---Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->n);
+				sprintf(buff, "RTPR %d, %d", proced->nivel, proced->n);	
 				geraCodigo(NULL, buff);
 				proced = NULL;
 			}
@@ -501,7 +501,6 @@ chamada_procedimento:
                     exit(1);
                 }
                 proced = var;
-				proced->proc.n = 0;
             }
             ABRE_PARENTESES lista_parametros
             {
@@ -518,7 +517,6 @@ chamada_procedimento:
                     exit(1);
                 }
                 proced = var;
-                proced->proc.n = 0;
 
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);

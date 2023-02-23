@@ -46,6 +46,7 @@ int write = 0;
 int declarandoParametros = 0;
 int declarandoFuncao = 0;
 int chamando_subrotina = 0;
+int subrotinaDeclarada = 0;
 
 
 //Pilha de deslocamentos
@@ -62,6 +63,8 @@ Stack* pilhaSubRotinas;
 Stack* pilhaParametros;
 Stack* pilhaContaParametros;
 
+//Pilha variaveisAtribuicao
+Stack* pilhaVariaveisAtribuicao;
 
 //Tabela de simbolos
 TabelaSimbolos ts;
@@ -87,6 +90,7 @@ Item* geraFuncao(char* identificador, int nivel)
 	strcpy(new_item->identificador,identificador);
 	new_item->categoria = CAT_FUNCAO;
 	new_item->nivel = nivel;
+	new_item->proc.implemented = 0;
 
 	return new_item;
 }
@@ -103,6 +107,7 @@ Item* geraProcedimento(char* identificador, int nivel)
 	strcpy(new_item->identificador,identificador);
 	new_item->categoria = CAT_PROCEDIM;
 	new_item->nivel = nivel;
+	new_item->proc.implemented = 0;
 
 	return new_item;
 }
@@ -273,7 +278,6 @@ Item* criaParametro(char* identificador,int nl,PassagemTipo tipoPassagem)
 
 void atualizaDeslocamentoParametros(Stack* pilha)
 {
-	printf("Atualiando deslocamentos\n");
 	Stack* aux = initStack();
 	int size = pilha->size;
 	while(pilha->size > 0)
@@ -297,7 +301,6 @@ void atualizaTiposParametros(Stack* pilha,int qtd,VarTipo tipo)
 	Stack* aux = initStack();
 	while(qtd > 0)
 	{
-		printf("qtd %d, size %d\n",qtd,pilha->size);
 		//retra os parametros atualizando o tipo
 		qtd--;
 		Item* parametro = pop(pilha);
@@ -324,11 +327,12 @@ void atualizaTiposParametros(Stack* pilha,int qtd,VarTipo tipo)
 %token MAIS MENOS MULTIPLICACAO DIVISAO
 %token READ WRITE TRUE FALSE
 %token T_LABEL T_TYPE T_ARRAY T_OF
-%token T_PROCEDURE T_FUNCTION
+%token T_PROCEDURE T_FUNCTION T_FORWARD
 %token T_GOTO T_IF T_THEN T_ELSE
 %token T_WHILE T_DO
 %token T_OR T_DIV T_AND T_NOT
 
+%nonassoc LOWER_THAN_ELSE
 %nonassoc T_ELSE
 %%
 
@@ -464,6 +468,30 @@ parte_declara_subrotinas:
 			            	| declara_funcao PONTO_E_VIRGULA parte_declara_subrotinas
 ;
 
+
+
+//Regra adicional: foward
+foward_ou_bloco	: T_FORWARD 
+				{
+					if(subrotinaDeclarada)
+					{
+						sprintf(buff,"Erro: o procedimento/funcao '%s' ja foi declarado!\n",proced->identificador);
+						yyerror(buff);
+						exit(1);
+					}
+				}
+				| 
+				{
+					//indica que a funcao ja foi implementada
+					proced->proc.implemented = 1;
+					//codigo entra procediemnto
+					sprintf(buff, "ENPR %d", nivel_lexico);
+                    geraCodigo(proced->proc.rotulo, buff);
+				}
+				bloco_subrotina;
+
+
+
 //Regra 12: declaracao de procedimento
 declara_procedimento:
 			{
@@ -471,23 +499,31 @@ declara_procedimento:
 			}
             T_PROCEDURE IDENT
             {
+				subrotinaDeclarada = 0;
                 Item* procedimento = busca(&ts, token);
 
+				//Se procedimento nao declarado
                 if (!procedimento) {
+					//decara e insere na tabela
                     proced = geraProcedimento(token, nivel_lexico);
                     
                     char* label = geraRotulo();
 					strcpy(proced->proc.rotulo,label);
-
-                    sprintf(buff, "ENPR %d", nivel_lexico);
-                    geraCodigo(proced->proc.rotulo, buff);
                 }
-				else
+				else if(procedimento->proc.implemented)
 				{
-					sprintf(buff,"Erro: o procedimento '%s' ja foi declarado!\n",token);
+					//procedimento ja implementado e esta sendo declarado novamente
+					sprintf(buff,"Erro: o procedimento '%s' ja foi implementado!\n",token);
 					yyerror(buff);
 					exit(1);
 				}
+				else
+				{
+					//flag que indica que a funcao ja foi declarada com foward
+					subrotinaDeclarada = 1;
+					proced = procedimento;
+				}
+				
             }
             parametros_formais PONTO_E_VIRGULA
             {
@@ -502,7 +538,7 @@ declara_procedimento:
 					proced->proc.parametros[proced->proc.n - i] = tmp->param;
                 }
             }
-            bloco_subrotina
+			foward_ou_bloco
 ;
 
 
@@ -513,6 +549,7 @@ declara_funcao:
 			}
             T_FUNCTION IDENT
             {
+				subrotinaDeclarada = 0;
                 Item* procedimento = busca(&ts, token);
 
                 if (!procedimento) {
@@ -520,36 +557,41 @@ declara_funcao:
                     
                     char* label = geraRotulo();
 					strcpy(proced->proc.rotulo,label);
-
-                    sprintf(buff, "ENPR %d", nivel_lexico);
-                    geraCodigo(proced->proc.rotulo, buff);
                 }
-				else
+				else if(procedimento->proc.implemented)
 				{
-					sprintf(buff,"Erro: o procedimento '%s' ja foi declarado!\n",token);
+					sprintf(buff,"Erro: a funcao '%s' ja foi declarado!\n",token);
 					yyerror(buff);
 					exit(1);
+				}
+				else
+				{
+					//flag que indica que a funcao ja foi declarada com foward
+					subrotinaDeclarada = 1;
+					proced = procedimento;
 				}
             }
             parametros_formais DOIS_PONTOS {declarandoFuncao = 1;}tipo{declarandoFuncao = 0;} PONTO_E_VIRGULA
             {
-				proced->proc.n = pilhaParametros->size;
-				proced->proc.parametros = malloc(sizeof(ParametroFormal)*proced->proc.n);
-                insere(&ts, proced);
-                
-				for(int i = 0; i < proced->proc.n; i++)
+				if(!subrotinaDeclarada)
 				{
-                    Item* tmp = (Item*)pop(pilhaParametros);
-					insere(&ts, tmp);
-					proced->proc.parametros[proced->proc.n - i] = tmp->param;
-                }
+					proced->proc.n = pilhaParametros->size;
+					proced->proc.parametros = malloc(sizeof(ParametroFormal)*proced->proc.n);
+					insere(&ts, proced);
+
+					for(int i = 0; i < proced->proc.n; i++)
+					{
+						Item* tmp = (Item*)pop(pilhaParametros);
+						insere(&ts, tmp);
+						proced->proc.parametros[proced->proc.n - i] = tmp->param;
+					}
+				}
             }
-            bloco_subrotina
+            foward_ou_bloco
 ;
 
 bloco_subrotina: 
             {
-				printf("---Empilha Procedimento %s nl %d n %d\n",proced->identificador,proced->nivel, proced->proc.n);
 				push(pilhaSubRotinas,proced);
             } 
             bloco
@@ -656,7 +698,6 @@ chamada_funcao:
                     exit(1);
                 }
 
-				printf("categoria do token %s eh %d\n",var->identificador,var->categoria);
 				if(var->categoria != CAT_FUNCAO)
 				{
 					sprintf(buff,"Erro: o token %s nao faz referencia a uma funcao\n",var->identificador);
@@ -692,9 +733,11 @@ chamada_funcao:
 				//recupera contador anterior
 				contaParametro = pop(pilhaContaParametros);
 				//gera codigo chama procedimento
+
                 sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
                 geraCodigo(NULL, buff);
                 proced = NULL;
+				printf("--fim chamada funcao com parametros--\n");
             }
 			;
 
@@ -702,14 +745,14 @@ chamada_funcao:
 parametros_formais:
             | 
 			{ 
-				printf("Inicio parametrosformais\n");
+				printf("Inicio parametros formais\n");
 				declarandoParametros = 1; } ABRE_PARENTESES { emptyStack(pilhaParametros); }
 			secao_parametros_formais parametros_formais_aux FECHA_PARENTESES
 			{
 				//corrige deslocamentos
 				atualizaDeslocamentoParametros(pilhaParametros);
 				declarandoParametros = 0;
-				printf("fim parametros formais %d \n",declarandoParametros);
+				printf("fim parametros formais \n");
 			}
 ;
 
@@ -749,13 +792,11 @@ lista_parametros_referencia:
 secao_parametros_formais: 
 			{
 				num_param = 0;
-				printf("Parametros formais valor\n");
 			}
 			lista_parametros_valor DOIS_PONTOS tipo 
             | VAR 
 			{
 				num_param = 0;
-				printf("Parametros formais referencia\n");
 			}
 			lista_parametros_referencia DOIS_PONTOS tipo
 ;
@@ -773,13 +814,14 @@ comando: 	atribuicao_ou_chama_procedimento
 			| escrita
 			| comando_repetitivo
 			| comando_condicional
+			| comando_composto
 ;
 
 atribuicao_ou_chama_procedimento:
 	identificador atribuicao_ou_chama_procedimento_aux;
 
 atribuicao_ou_chama_procedimento_aux:
-	atribuicao
+	 atribuicao
 	| chamada_procedimento;
 
 
@@ -811,11 +853,20 @@ variavel_ou_chamada_funcao_aux:
 atribuicao	: 
 			{
 				printf("--Inicia atribuicao--\n");
+				if(!var)
+				{
+					//gera erro
+					sprintf(buff,"Erro: variavel nao foi declarada!\n");
+					yyerror(buff);
+					exit(1);
+				}
 				varAtribuida = var;
+				push(pilhaVariaveisAtribuicao,var);
 			}
 			ATRIBUICAO expressao
 			{
 				//TODO: Verifica se o tipo da expressao eh o mesmo da variavel
+				varAtribuida = pop(pilhaVariaveisAtribuicao);
 				geraArmazenaValor(varAtribuida);
 				printf("--Fim atribuicao--\n");
 			}
@@ -836,24 +887,26 @@ parametros_letura:
 ;
 
 
-escrita:
-            WRITE ABRE_PARENTESES parametros_write FECHA_PARENTESES
+escrita: WRITE ABRE_PARENTESES parametros_write FECHA_PARENTESES
 ;
 
 parametros_write:
 					parametros_write VIRGULA expressao
 					{
+						printf("virgula expressao ");
 						geraCodigo(NULL, "IMPR");
 					}
 					| expressao
 					{
+						printf(" expressao ");
 						geraCodigo(NULL, "IMPR");
 					}
 ;
 
 
 //Regra 22: comando condcional
-comando_condicional_else : | T_ELSE comando_composto;
+comando_condicional_else : %prec T_ELSE {printf("inicio comando else\n");} comando {printf("fim comando else\n");}
+  						| LOWER_THAN_ELSE
 comando_condicional	: 
 					{
 						printf("--Inicio If--\n");
@@ -871,7 +924,7 @@ comando_condicional	:
 						push(pilhaRotulo,rotulo_entrada_else);
 
 					}
-					comando_composto
+					comando
 					{
 						//Cria rotulo saida e empilha
 						char* rotulo_saida_else = geraRotulo();
@@ -895,6 +948,8 @@ comando_condicional	:
 
 						//Insere rotulo saida else
 						geraCodigo (rotulo_saida_else, "NADA");
+
+						printf("--Fim If--\n");
 					}
 					;
 
@@ -931,7 +986,7 @@ comando_repetitivo	: T_WHILE
 						push(pilhaRotulo,rotulo_saida);
 
 					}
-					T_DO comando_composto
+					T_DO comando
 					{
 						//recupera rotulos
 						char* rotulo_saida = pop(pilhaRotulo);
@@ -1068,6 +1123,8 @@ int main (int argc, char** argv) {
 	pilhaSubRotinas = initStack();
 	pilhaParametros = initStack();
 	pilhaContaParametros = initStack();
+
+	pilhaVariaveisAtribuicao = initStack();
 
    yyin=fp;
    yyparse();

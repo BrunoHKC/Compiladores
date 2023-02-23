@@ -74,16 +74,18 @@
      T_OF = 290,
      T_PROCEDURE = 291,
      T_FUNCTION = 292,
-     T_GOTO = 293,
-     T_IF = 294,
-     T_THEN = 295,
-     T_ELSE = 296,
-     T_WHILE = 297,
-     T_DO = 298,
-     T_OR = 299,
-     T_DIV = 300,
-     T_AND = 301,
-     T_NOT = 302
+     T_FORWARD = 293,
+     T_GOTO = 294,
+     T_IF = 295,
+     T_THEN = 296,
+     T_ELSE = 297,
+     T_WHILE = 298,
+     T_DO = 299,
+     T_OR = 300,
+     T_DIV = 301,
+     T_AND = 302,
+     T_NOT = 303,
+     LOWER_THAN_ELSE = 304
    };
 #endif
 /* Tokens.  */
@@ -122,16 +124,18 @@
 #define T_OF 290
 #define T_PROCEDURE 291
 #define T_FUNCTION 292
-#define T_GOTO 293
-#define T_IF 294
-#define T_THEN 295
-#define T_ELSE 296
-#define T_WHILE 297
-#define T_DO 298
-#define T_OR 299
-#define T_DIV 300
-#define T_AND 301
-#define T_NOT 302
+#define T_FORWARD 293
+#define T_GOTO 294
+#define T_IF 295
+#define T_THEN 296
+#define T_ELSE 297
+#define T_WHILE 298
+#define T_DO 299
+#define T_OR 300
+#define T_DIV 301
+#define T_AND 302
+#define T_NOT 303
+#define LOWER_THAN_ELSE 304
 
 
 

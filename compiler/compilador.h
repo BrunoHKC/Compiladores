@@ -19,7 +19,7 @@ typedef enum simbolos {
   simb_label,
   simb_type,
   simb_array,simb_of,
-  simb_procedure,simb_function,
+  simb_procedure,simb_function,simb_forward,
   simb_goto,
   simb_if,simb_then,simb_else,
   simb_while,simb_do,

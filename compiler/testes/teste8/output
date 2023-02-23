@@ -1,0 +1,47 @@
+     INPP
+     AMEM 1
+     DSVS R00
+R02: ENPR 1 
+     AMEM 1
+     CRVL 1, -5
+     CRVL 1, -4
+     CMMA 
+     DSVF R03
+     CRVL 1, -4
+     ARMZ 1, 0
+     DSVS R04
+R03: NADA 
+     CRVL 1, -5
+     ARMZ 1, 0
+R04: NADA 
+     CRVL 1, 0
+     ARMZ 1, -6
+     DMEM 1
+     RTPR 1, 2
+R01: ENPR 1 
+     AMEM 1
+     CRVL 1, -5
+     CRVL 1, -4
+     CMMA 
+     DSVF R05
+     CRVL 1, -5
+     ARMZ 1, 0
+     DSVS R06
+R05: NADA 
+     CRVL 1, -4
+     ARMZ 1, 0
+R06: NADA 
+     CRVL 1, 0
+     ARMZ 1, -6
+     DMEM 1
+     RTPR 1, 2
+R00: NADA 
+     AMEM 1
+     CRCT 5
+     CRCT 10
+     CHPR R01, 0
+     ARMZ 0, 0
+     CRVL 0, 0
+     IMPR
+     DMEM 1
+     PARA

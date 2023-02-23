@@ -105,6 +105,12 @@ function { simbolo = simb_function;
           IMPRIME("function  ");
           return T_FUNCTION;
  }
+
+forward  { simbolo = simb_forward;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME("forward  ");
+          return T_FORWARD;
+ }
  
 goto { simbolo = simb_goto;
           strncpy (token, yytext, TAM_TOKEN);

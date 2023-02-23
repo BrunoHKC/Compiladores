@@ -7,6 +7,8 @@ TabelaSimbolos ts;
 //-----------------Primitivas da tabela de simbolo-----------------//
 void insere(TabelaSimbolos* ts,Item* item)
 {
+	printf("Inserindo simbolo %s\n",item->identificador);
+
 	if(ts->tamanho == 0)
 	{
 		ts->primeiro = item;
@@ -21,7 +23,8 @@ void insere(TabelaSimbolos* ts,Item* item)
 	ts->ultimo->next = NULL;
 	ts->ultimo = item;
 	ts->tamanho++;
-
+	
+	
 	return;
 }
 
@@ -93,8 +96,6 @@ void destroiItem(Item* item)
 {
 	if(item == NULL)
 		return;
-
-	printf("---Destruindo item %s\n",item->identificador);
 		
 	ParametroFormal* aux;
 	ParametroFormal* p;
@@ -116,6 +117,7 @@ void destroiItem(Item* item)
 }
 
 void atualizaTipos(TabelaSimbolos* ts, int qtd, VarTipo tipo) {
+	printf("Atualizando tipo\n");
 	Item* item = ts->ultimo;
 	while (item && qtd--) {
 		item->var.tipo = tipo;

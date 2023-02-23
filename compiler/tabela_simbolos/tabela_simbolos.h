@@ -50,6 +50,7 @@ typedef struct Procedimento
 	int n;							// qtd de parametros
 	ParametroFormal* parametros;
 	VarTipo tipo;
+	int implemented;
 } Procedimento;
 
 

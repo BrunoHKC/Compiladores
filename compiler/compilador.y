@@ -33,7 +33,7 @@ enum {
 
 //incializa variaveis globais
 int num_vars;
-int nivel_lexico = 0;
+int nivel_lexico = -1;
 int desloc = 0;
 int sinal = 0;	//0: mais , 1: menos
 char tokenAtual[100];
@@ -229,22 +229,29 @@ bloco       : {
           			snprintf(buff,15,"AMEM %d",desloc);
           			geraCodigo (NULL, buff);
 
-					char* rotulo_pula_subrotinas = geraRotulo();
-					snprintf(buff,15,"DSVS %s",rotulo_pula_subrotinas);
-          			geraCodigo (NULL, buff);
+					if(nivel_lexico == 0)
+					{					
+						char* rotulo_pula_subrotinas = geraRotulo();
+						snprintf(buff,15,"DSVS %s",rotulo_pula_subrotinas);
+						geraCodigo (NULL, buff);
 
-					push(pilhaRotulo,rotulo_pula_subrotinas);
+						push(pilhaRotulo,rotulo_pula_subrotinas);
+					}
   			  }
 
 			  parte_declara_subrotinas
 			  {
-					char* rotulo_pula_subrotinas = pop(pilhaRotulo);
-          			geraCodigo (rotulo_pula_subrotinas, "NADA");
+					if(nivel_lexico == 0)
+					{
+						char* rotulo_pula_subrotinas = pop(pilhaRotulo);
+						geraCodigo (rotulo_pula_subrotinas, "NADA");
+					}
 			  }
 
 
               comando_composto
               {
+
               		//Remove simbolos
               		elimina(&ts, desloc);
               	
@@ -252,8 +259,8 @@ bloco       : {
 					char buff[5 + 10];
           			snprintf(buff,15,"DMEM %d",desloc);
           			geraCodigo (NULL, buff);
-          		
-          			//Atualiza nivel lexico
+					
+					//Atualiza nivel lexico
           			nivel_lexico--;
           		
           			//Recupera deslocamento anterior
@@ -287,17 +294,15 @@ declara_vars 	:
 //Regra 10: lista de identificadores
 lista_idents: lista_idents VIRGULA IDENT
               { /* insere ultima vars na tabela de simbolos */
-			  	strcpy(tokenAtual,token);
-              	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",tokenAtual);
-              	Item* novo_item = ItemVarSimples(tokenAtual,nivel_lexico,desloc);
+              	printf("[ASynt]\tINSERE VAR SIMPLES %s nl= %d, desloc = %d\n",token,nivel_lexico,desloc);
+              	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
               	insere(&ts,novo_item);
               	desloc++;
               	num_vars++;
                }
             | IDENT { /* insere vars na tabela de simbolos */
-				strcpy(tokenAtual,token);
-            	Item* novo_item = ItemVarSimples(tokenAtual,nivel_lexico,desloc);
-            	printf("[ASynt]\tINSERE VAR SIMPLES  %s\n",tokenAtual);
+            	Item* novo_item = ItemVarSimples(token,nivel_lexico,desloc);
+            	printf("[ASynt]\tINSERE VAR SIMPLES %s nl= %d, desloc = %d\n",token,nivel_lexico,desloc);
               	insere(&ts,novo_item);
               	desloc++;
               	num_vars++;
@@ -307,36 +312,26 @@ lista_idents: lista_idents VIRGULA IDENT
 
 //Regra 11: parte declaracoes de sub-rotinas 	
 parte_declara_subrotinas:
-            |
-            {
-                nivel_lexico++;
-                desloc = 0;
-            }
-            parte_declara_subrotinas_aux
-            {
-                nivel_lexico--;
-            }
-;
-
-parte_declara_subrotinas_aux:
-            declara_procedimento PONTO_E_VIRGULA parte_declara_subrotinas_aux
-//            | declara_funcao PONTO_E_VIRGULA parte_declara_subrotinas_aux
-            | 
+				            |declara_procedimento PONTO_E_VIRGULA parte_declara_subrotinas
+//			            	| declara_funcao PONTO_E_VIRGULA parte_declara_subrotinas
 ;
 
 //Regra 12: declaracao de procedimento
 declara_procedimento:
-            T_PROCEDURE identificador
+			{
+				printf("--Inicio declara procedimento--\n");
+			}
+            T_PROCEDURE IDENT
             {
                 Item* procedimento = busca(&ts, token);
 
                 if (!procedimento) {
-                    proced = geraProcedimento(token, nivel_lexico);
+                    proced = geraProcedimento(token, nivel_lexico+1);
                     
                     char* label = geraRotulo();
 					strcpy(proced->proc.rotulo,label);
 
-                    sprintf(buff, "ENPR %d", nivel_lexico);
+                    sprintf(buff, "ENPR %d", nivel_lexico+1);
                     geraCodigo(proced->proc.rotulo, buff);
                 }
 				else
@@ -352,6 +347,7 @@ declara_procedimento:
                 int offset = - 4;
                 proced->proc.parametros = (ParametroFormal*)malloc(sizeof(ParametroFormal)*proced->proc.n);
                 insere(&ts, proced);
+				printf("Inseriu procedimento na tabela de simbolos\n");
                 
 				for(int i = 0; i < proced->proc.n; i++)
 				{
@@ -365,6 +361,8 @@ declara_procedimento:
                     //proced->proc.parametros[i] = (*tmp);
                     
                 }
+
+
             }
             bloco_subrotina
 ;
@@ -384,6 +382,7 @@ bloco_subrotina:
 
 chamada_procedimento:
             {
+				printf("--Chamada procedimento com parametros--\n");
                 if (!var) {
                     yyerror("Procedimento nao declarado.");
                     exit(1);
@@ -399,8 +398,23 @@ chamada_procedimento:
                 proced = NULL;
             }
             FECHA_PARENTESES
+			| ABRE_PARENTESES FECHA_PARENTESES
+			{
+				printf("--Chamada procedimento sem parametro com parenteses--\n");
+                if (!var) {
+                    yyerror("Procedimento nao declarado.");
+                    exit(1);
+                }
+                proced = var;
+                proced->proc.n = 0;
+
+                sprintf(buff, "CHPR %s, %d", proced->proc.rotulo, nivel_lexico);
+                geraCodigo(NULL, buff);
+                proced = NULL;
+            }
             |
             {
+				printf("--Chamada procedimento sem parenteses--\n");
                 if (!var) {
                     yyerror("Procedimento nao declarado.");
                     exit(1);
@@ -860,7 +874,16 @@ fator: 	variavel
 
 
 //Regra 30: variavel
-variavel	: identificador;
+variavel	: 	identificador
+				{
+					if(var == NULL)
+					{
+						//gera erro
+	          			snprintf(buff,100,"Erro: variavel '%s' nao foi declarada!\n",token);
+						yyerror(buff);
+						exit(1);
+					}
+				};
 
 //Regra 32: Numero
 numero: NUMERO {
@@ -875,18 +898,7 @@ numero: NUMERO {
 
 identificador: IDENT
 				{ 
-					strcpy(tokenAtual,token);
-					//Salva token atual
-					var = busca(&ts,tokenAtual);
-					if(var == NULL)
-					{
-						//gera erro
-						char buff[100];
-	          			snprintf(buff,100,"Erro: identificador '%s' nao existe!\n",tokenAtual);
-						yyerror(buff);
-						exit(1);
-					}
-
+					var = busca(&ts,token);
 				}
 
 %%

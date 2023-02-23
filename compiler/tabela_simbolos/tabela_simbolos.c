@@ -54,6 +54,7 @@ Item* busca(TabelaSimbolos* ts,char* identificador)
 
 void elimina(TabelaSimbolos* ts,int n)
 {
+	printf("Eliminando %d itens\n",n);
 	while(n > 0)
 	{
 		//Possui algo para remover
@@ -70,6 +71,7 @@ void elimina(TabelaSimbolos* ts,int n)
 			printf("[TS]\nAlerta: Tentou remover simbolos a mais");
 			break;
 		}
+		ts->tamanho--;
 		n--;
 	}
 	

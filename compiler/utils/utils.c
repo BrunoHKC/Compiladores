@@ -12,7 +12,7 @@ Item* ItemVarSimples(char* identificador,int nivel,int deslocamento)
 	//Preenche campos
 	strcpy(new_item->identificador,identificador);
 	new_item->categoria = CAT_VARIAVEL;
-	new_item->nivel = nivel;
+	new_item->nivel = nivel>=0? nivel:0;
 	new_item->var.deslocamento = deslocamento;
 	
 	return new_item;

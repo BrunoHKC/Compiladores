@@ -24,7 +24,7 @@ var
 
 begin
    if (num1 > num2) then
-      result := num1;
+      result := num1
    else
       result := num2;
    max := result;
@@ -32,5 +32,5 @@ end;
 
 begin
   res := max(5,10);
-  write(res);
+  write(res)
 end.

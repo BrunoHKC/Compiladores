@@ -1,93 +1,165 @@
 program     # program 
- ident      # MaximumMinimumNu 
+ ident      # funcao 
  abre_parenteses      # ( 
+ ident      # input 
+[ASynt]	INSERE VAR SIMPLES input nl= 0, desloc = 0
+Inserindo simbolo input
+ virgula      # , 
  ident      # output 
-[ASynt]	INSERE VAR SIMPLES output nl= 0, desloc = 0
+[ASynt]	INSERE VAR SIMPLES output nl= 0, desloc = 1
 Inserindo simbolo output
  fecha_parenteses     # ) 
  pt_virgula      # ; 
 var      # var 
- ident      # res 
-[ASynt]	INSERE VAR SIMPLES res nl= 0, desloc = 0
-Inserindo simbolo res
+ ident      # m 
+[ASynt]	INSERE VAR SIMPLES m nl= 0, desloc = 0
+Inserindo simbolo m
  dois pontos     # : 
 integer     # integer 
 Atualizando tipo
  pt_virgula      # ; 
 function      # function 
 --Inicio declara funcao--
- ident      # max 
-Buscando item max na tabela de simbolos
+ ident      # f 
+Buscando item f na tabela de simbolos
 Item nao encontrado
  abre_parenteses      # ( 
 Inicio parametros formais
- ident      # num1 
- virgula      # , 
- ident      # num2 
- dois pontos     # : 
-integer     # integer 
- fecha_parenteses     # ) 
-fim parametros formais 
+ ident      # n 
  dois pontos     # : 
 integer     # integer 
  pt_virgula      # ; 
-Inserindo simbolo max
-Inserindo simbolo num2
-Inserindo simbolo num1
-forward      # forward 
- pt_virgula      # ; 
-function      # function 
---Inicio declara funcao--
- ident      # min 
-Buscando item min na tabela de simbolos
-Item nao encontrado
- abre_parenteses      # ( 
-Inicio parametros formais
- ident      # num1 
- virgula      # , 
- ident      # num2 
- dois pontos     # : 
-integer     # integer 
- fecha_parenteses     # ) 
-fim parametros formais 
- dois pontos     # : 
-integer     # integer 
- pt_virgula      # ; 
-Inserindo simbolo min
-Inserindo simbolo num2
-Inserindo simbolo num1
 var      # var 
- ident      # result 
-[ASynt]	INSERE VAR SIMPLES result nl= 1, desloc = 0
-Inserindo simbolo result
+ ident      # k 
+ dois pontos     # : 
+integer     # integer 
+ fecha_parenteses     # ) 
+fim parametros formais 
+ dois pontos     # : 
+integer     # integer 
+ pt_virgula      # ; 
+Inserindo simbolo f
+Inserindo simbolo k
+Inserindo simbolo n
+var      # var 
+ ident      # p 
+[ASynt]	INSERE VAR SIMPLES p nl= 1, desloc = 0
+Inserindo simbolo p
+ virgula      # , 
+ ident      # q 
+[ASynt]	INSERE VAR SIMPLES q nl= 1, desloc = 1
+Inserindo simbolo q
  dois pontos     # : 
 integer     # integer 
 Atualizando tipo
  pt_virgula      # ; 
 begin     # begin 
 if      # if 
---Inicio If--
- abre_parenteses      # ( 
- ident      # num1 
-Buscando item num1 na tabela de simbolos
- maior     # > 
- ident      # num2 
-Buscando item num2 na tabela de simbolos
- fecha_parenteses     # ) 
+ ident      # n 
+Buscando item n na tabela de simbolos
+ menor     # < 
+ numero      # 2 
 then      # then 
- ident      # result 
-Buscando item result na tabela de simbolos
+begin     # begin 
+ ident      # f 
+Buscando item f na tabela de simbolos
  atribuicao      # := 
 --Inicia atribuicao--
- ident      # num2 
-Buscando item num2 na tabela de simbolos
+ ident      # n 
+Buscando item n na tabela de simbolos
+ pt_virgula      # ; 
+--Fim atribuicao--
+ ident      # k 
+Buscando item k na tabela de simbolos
+ atribuicao      # := 
+--Inicia atribuicao--
+ numero      # 0 
+ pt_virgula      # ; 
+--Fim atribuicao--
+end      # end 
 else      # else 
---Fim atribuicao--
- ident      # result 
-Buscando item result na tabela de simbolos
+begin     # begin 
+ ident      # f 
+Buscando item f na tabela de simbolos
  atribuicao      # := 
 --Inicia atribuicao--
- ident      # num1 
-Buscando item num1 na tabela de simbolos
- ident      # min 
+ ident      # f 
+Buscando item f na tabela de simbolos
+ abre_parenteses      # ( 
+--Chamada funcao com parametros--
+ ident      # n 
+Buscando item n na tabela de simbolos
+ menos     # - 
+ numero      # 1 
+ virgula      # , 
+ ident      # p 
+Buscando item p na tabela de simbolos
+ fecha_parenteses     # ) 
+--fim chamada funcao com parametros--
+ mais     # + 
+ ident      # f 
+Buscando item f na tabela de simbolos
+ abre_parenteses      # ( 
+--Chamada funcao com parametros--
+ ident      # n 
+Buscando item n na tabela de simbolos
+ menos     # - 
+ numero      # 2 
+ virgula      # , 
+ ident      # q 
+Buscando item q na tabela de simbolos
+ fecha_parenteses     # ) 
+--fim chamada funcao com parametros--
+ pt_virgula      # ; 
 --Fim atribuicao--
+ ident      # k 
+Buscando item k na tabela de simbolos
+ atribuicao      # := 
+--Inicia atribuicao--
+ ident      # p 
+Buscando item p na tabela de simbolos
+ mais     # + 
+ ident      # q 
+Buscando item q na tabela de simbolos
+ mais     # + 
+ numero      # 1 
+ pt_virgula      # ; 
+--Fim atribuicao--
+end      # end 
+--Fim If--
+ pt_virgula      # ; 
+write     # write 
+ abre_parenteses      # ( 
+ ident      # n 
+Buscando item n na tabela de simbolos
+ virgula      # , 
+ expressao  ident      # k 
+Buscando item k na tabela de simbolos
+ fecha_parenteses     # ) 
+virgula expressao  pt_virgula      # ; 
+end      # end 
+Eliminando 2 itens
+Buscando item f na tabela de simbolos
+Eliminando 2 itens
+ pt_virgula      # ; 
+begin     # begin 
+write     # write 
+ abre_parenteses      # ( 
+ ident      # f 
+Buscando item f na tabela de simbolos
+ abre_parenteses      # ( 
+--Chamada funcao com parametros--
+ numero      # 3 
+ virgula      # , 
+ ident      # m 
+Buscando item m na tabela de simbolos
+ fecha_parenteses     # ) 
+--fim chamada funcao com parametros--
+ virgula      # , 
+ expressao  ident      # m 
+Buscando item m na tabela de simbolos
+ fecha_parenteses     # ) 
+virgula expressao  pt_virgula      # ; 
+end      # end 
+Eliminando 1 itens
+ ponto      # . 

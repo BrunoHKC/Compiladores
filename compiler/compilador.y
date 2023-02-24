@@ -805,16 +805,25 @@ secao_parametros_formais:
 
 
 //Regra 16: comando composto
-comando_composto_aux: comando_composto_aux comando PONTO_E_VIRGULA | ;
-comando_composto: T_BEGIN comando PONTO_E_VIRGULA comando_composto_aux T_END;
+comando_composto:
+    T_BEGIN comandos T_END
+  | T_BEGIN T_END
+;
+
+comandos:
+    comando PONTO_E_VIRGULA comandos
+  | comando
+  | comando PONTO_E_VIRGULA
+;
 
 //Regra 17 e 18: comando (omitido comando sem rotulo)
-comando: 	atribuicao_ou_chama_procedimento
-			| leitura
-			| escrita
-			| comando_repetitivo
-			| comando_condicional
-			| comando_composto
+comando:
+    atribuicao_ou_chama_procedimento
+  | comando_repetitivo
+  | comando_condicional
+  | comando_composto
+  | leitura
+  | escrita
 ;
 
 atribuicao_ou_chama_procedimento:
@@ -905,43 +914,9 @@ parametros_write:
 
 
 //Regra 22: comando condcional
-comando_condicional_else : %prec T_ELSE {printf("inicio comando else\n");} comando {printf("fim comando else\n");}
-  						| LOWER_THAN_ELSE
-comando_condicional	: 
-					{
-						printf("--Inicio If--\n");
-					}
-					T_IF expressao T_THEN
-					{
-						//Cria rotulo saida e empilha
-						char* rotulo_entrada_else = geraRotulo();
-						
-						//desvia se falso
-						sprintf(buff,"DSVF %s",rotulo_entrada_else);
-						geraCodigo (NULL, buff);
-
-						//empilha rotulo entrada do else
-						push(pilhaRotulo,rotulo_entrada_else);
-
-					}
-					comando
-					{
-						//Cria rotulo saida e empilha
-						char* rotulo_saida_else = geraRotulo();
-						
-						//desvia sempre
-						sprintf(buff,"DSVS %s",rotulo_saida_else);
-						geraCodigo (NULL, buff);
-				
-						//recupera rotulo entrada do else
-						char* rotulo_entrada_else = pop(pilhaRotulo);
-
-						//Insere rotulo entrada else
-						geraCodigo (rotulo_entrada_else, "NADA");
-
-						push(pilhaRotulo,rotulo_saida_else);
-
-					} comando_condicional_else
+comando_condicional:
+					if_then
+					cond_else
 					{
 						//recupera rotulo saida do else
 						char* rotulo_saida_else = pop(pilhaRotulo);
@@ -951,7 +926,44 @@ comando_condicional	:
 
 						printf("--Fim If--\n");
 					}
-					;
+;
+
+if_then:
+		T_IF expressao T_THEN 
+		{
+			//Cria rotulo saida e empilha
+			char* rotulo_entrada_else = geraRotulo();
+			
+			//desvia se falso
+			sprintf(buff,"DSVF %s",rotulo_entrada_else);
+			geraCodigo (NULL, buff);
+
+			//empilha rotulo entrada do else
+			push(pilhaRotulo,rotulo_entrada_else);
+		}
+		comando
+		{
+			//Cria rotulo saida e empilha
+			char* rotulo_saida_else = geraRotulo();
+			
+			//desvia sempre
+			sprintf(buff,"DSVS %s",rotulo_saida_else);
+			geraCodigo (NULL, buff);
+	
+			//recupera rotulo entrada do else
+			char* rotulo_entrada_else = pop(pilhaRotulo);
+
+			//Insere rotulo entrada else
+			geraCodigo (rotulo_entrada_else, "NADA");
+
+			push(pilhaRotulo,rotulo_saida_else);
+		}
+;
+
+cond_else:
+  T_ELSE comando
+  | %prec LOWER_THAN_ELSE
+;
 
 
 //Regra 23: comando repetitivo
